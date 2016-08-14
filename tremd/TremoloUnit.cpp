@@ -34,16 +34,50 @@ TremoloUnit::TremoloUnit (AudioUnit component) : AUEffectBase (component) {
 		kParameter_Frequency, 
 		kDefaultValue_Tremolo_Freq 
 	);
-        
-	SetParameter (
-		kParameter_Depth, 
-		kDefaultValue_Tremolo_Depth 
-	);
-        
-	SetParameter (
-		kParameter_Waveform, 
-		kDefaultValue_Tremolo_Waveform 
-	);
+    
+    SetParameter (
+                  kParameter_Signature,
+                  kDefaultValue_Signature
+                  );
+    
+    SetParameter (
+                  kParameter_Speed,
+                  kDefaultValue_Speed
+                  );
+    
+    SetParameter (
+                  kParameter_Depth,
+                  kDefaultValue_Tremolo_Depth
+                  );
+    
+    SetParameter (
+                  kParameter_Waveform,
+                  kDefaultValue_Tremolo_Waveform
+                  );
+    SetParameter (
+                  kParameter_Ring,
+                  kDefaultValue_Ring
+                  );
+    SetParameter (
+                  kParameter_Ring_Signature,
+                  kDefaultValue_Ring_Signature
+                  );
+    
+    SetParameter (
+                  kParameter_Ring_Speed,
+                  kDefaultValue_Ring_Speed
+                  );
+    
+    SetParameter (
+                  kParameter_Ring_Depth,
+                  kDefaultValue_Ring_Depth
+                  );
+                  
+                  
+    SetParameter (
+                  kParameter_Ring_Waveform,
+                  kDefaultValue_Ring_Waveform
+                  );
 
 	// Also during instantiation, sets the preset menu to indicate the default preset,
 	//	which corresponds to the default parameters. It's possible to set this so a
@@ -89,7 +123,7 @@ ComponentResult TremoloUnit::GetParameterInfo (
 					kParamName_Tremolo_Freq,
 					false
 				);
-				outParameterInfo.unit			= kAudioUnitParameterUnit_Milliseconds;
+				outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
 					// Sets the unit of measurement for the Frequency parameter to Hertz.
 				outParameterInfo.minValue		= kMinimumValue_Tremolo_Freq;
 					// Sets the minimum value for the Frequency parameter.
@@ -101,36 +135,130 @@ ComponentResult TremoloUnit::GetParameterInfo (
 					// Adds a flag to indicate to the host that it should use a logarithmic 
 					// control for the Frequency parameter.
 				break;
-
+                
+            case kParameter_Signature:
+                // Invoked when the view needs information for the kTremoloParam_Depth parameter.
+                AUBase::FillInParameterName (
+                                             outParameterInfo,
+                                             kParamName_Signature,
+                                             false
+                                             );
+                outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
+                outParameterInfo.minValue		= kMinimumValue_Signature;
+                outParameterInfo.maxValue		= kMaximumValue_Signature;
+                outParameterInfo.defaultValue	= kDefaultValue_Signature;
+                break;
+                
+            case kParameter_Speed:
+                // Invoked when the view needs information for the kTremoloParam_Depth parameter.
+                AUBase::FillInParameterName (
+                                             outParameterInfo,
+                                             kParamName_Speed,
+                                             false
+                                             );
+                outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
+                outParameterInfo.minValue		= kMinimumValue_Speed;
+                outParameterInfo.maxValue		= kMaximumValue_Speed;
+                outParameterInfo.defaultValue	= kDefaultValue_Speed;
+                break;
+                
             case kParameter_Depth:
-			// Invoked when the view needs information for the kTremoloParam_Depth parameter.
-				AUBase::FillInParameterName (
-					outParameterInfo,
-					kParamName_Tremolo_Depth,
-					false
-				);
-				outParameterInfo.unit			= kAudioUnitParameterUnit_Percent;
-				outParameterInfo.minValue		= kMinimumValue_Tremolo_Depth;
-				outParameterInfo.maxValue		= kMaximumValue_Tremolo_Depth;
-				outParameterInfo.defaultValue	= kDefaultValue_Tremolo_Depth;
-				break;
-
+                // Invoked when the view needs information for the kTremoloParam_Depth parameter.
+                AUBase::FillInParameterName (
+                                             outParameterInfo,
+                                             kParamName_Tremolo_Depth,
+                                             false
+                                             );
+                outParameterInfo.unit			= kAudioUnitParameterUnit_Percent;
+                outParameterInfo.minValue		= kMinimumValue_Tremolo_Depth;
+                outParameterInfo.maxValue		= kMaximumValue_Tremolo_Depth;
+                outParameterInfo.defaultValue	= kDefaultValue_Tremolo_Depth;
+                break;
+                
             case kParameter_Waveform:
-			// Invoked when the view needs information for the kTremoloParam_Waveform parameter.
-				AUBase::FillInParameterName (
-					outParameterInfo,
-					kParamName_Tremolo_Waveform,
-					false
-				);
-				outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
-				// Sets the unit of measurement for the Waveform parameter to "indexed," allowing 
-				// it to be displayed as a pop-up menu in the generic view. The following three 
-				// statements set the minimum, maximum, and default values for the depth parameter. 
-				// All three are required for proper functioning of the parameter's user interface.
-				outParameterInfo.minValue		= kSineWave_Tremolo_Waveform;
-				outParameterInfo.maxValue		= kSquareWave_Tremolo_Waveform;
-				outParameterInfo.defaultValue	= kDefaultValue_Tremolo_Waveform;
-				break;
+                // Invoked when the view needs information for the kTremoloParam_Waveform parameter.
+                AUBase::FillInParameterName (
+                                             outParameterInfo,
+                                             kParamName_Tremolo_Waveform,
+                                             false
+                                             );
+                outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
+                // Sets the unit of measurement for the Waveform parameter to "indexed," allowing
+                // it to be displayed as a pop-up menu in the generic view. The following three
+                // statements set the minimum, maximum, and default values for the depth parameter.
+                // All three are required for proper functioning of the parameter's user interface.
+                outParameterInfo.minValue		= kSineWave_Tremolo_Waveform;
+                outParameterInfo.maxValue		= kSquareWave_Tremolo_Waveform;
+                outParameterInfo.defaultValue	= kDefaultValue_Tremolo_Waveform;
+                break;
+                
+            case kParameter_Ring:
+                // Invoked when the view needs information for the kTremoloParam_Depth parameter.
+                AUBase::FillInParameterName (
+                                             outParameterInfo,
+                                             kParamName_Ring,
+                                             false
+                                             );
+                outParameterInfo.unit			= kAudioUnitParameterUnit_Percent;
+                outParameterInfo.minValue		= kMinimumValue_Ring;
+                outParameterInfo.maxValue		= kMaximumValue_Ring;
+                outParameterInfo.defaultValue	= kDefaultValue_Ring;
+                break;
+            case kParameter_Ring_Signature:
+                // Invoked when the view needs information for the kTremoloParam_Depth parameter.
+                AUBase::FillInParameterName (
+                                             outParameterInfo,
+                                             kParamName_Signature,
+                                             false
+                                             );
+                outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
+                outParameterInfo.minValue		= kMinimumValue_Signature;
+                outParameterInfo.maxValue		= kMaximumValue_Signature;
+                outParameterInfo.defaultValue	= kDefaultValue_Signature;
+                break;
+                
+            case kParameter_Ring_Speed:
+                // Invoked when the view needs information for the kTremoloParam_Depth parameter.
+                AUBase::FillInParameterName (
+                                             outParameterInfo,
+                                             kParamName_Speed,
+                                             false
+                                             );
+                outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
+                outParameterInfo.minValue		= kMinimumValue_Speed;
+                outParameterInfo.maxValue		= kMaximumValue_Speed;
+                outParameterInfo.defaultValue	= kDefaultValue_Speed;
+                break;
+                
+            case kParameter_Ring_Depth:
+                // Invoked when the view needs information for the kTremoloParam_Depth parameter.
+                AUBase::FillInParameterName (
+                                             outParameterInfo,
+                                             kParamName_Tremolo_Depth,
+                                             false
+                                             );
+                outParameterInfo.unit			= kAudioUnitParameterUnit_Percent;
+                outParameterInfo.minValue		= kMinimumValue_Tremolo_Depth;
+                outParameterInfo.maxValue		= kMaximumValue_Tremolo_Depth;
+                outParameterInfo.defaultValue	= kDefaultValue_Tremolo_Depth;
+                break;
+                
+            case kParameter_Ring_Waveform:
+                // Invoked when the view needs information for the kTremoloParam_Waveform parameter.
+                AUBase::FillInParameterName (
+                                             outParameterInfo,
+                                             kParamName_Tremolo_Waveform,
+                                             false
+                                             );
+                outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
+                // Sets the unit of measurement for the Waveform parameter to "indexed," allowing
+                // it to be displayed as a pop-up menu in the generic view. The following three
+                // statements set the minimum, maximum, and default values for the depth parameter.
+                // All three are required for proper functioning of the parameter's user interface.
+                outParameterInfo.minValue		= kSineWave_Tremolo_Waveform;
+                outParameterInfo.maxValue		= kSquareWave_Tremolo_Waveform;
+                outParameterInfo.defaultValue	= kDefaultValue_Tremolo_Waveform;
+                break;
 
 			default:
 				result = kAudioUnitErr_InvalidParameter;
@@ -173,6 +301,29 @@ ComponentResult TremoloUnit::GetParameterValueStrings (
 			NULL
 		);
 		return noErr;
+    }
+    if ((inScope == kAudioUnitScope_Global) && (inParameterID == kParameter_Ring_Waveform)) {
+        // This method applies only to the waveform parameter, which is in the global scope.
+        
+        // When this method gets called by the AUBase::DispatchGetPropertyInfo method, which
+        // provides a null value for the outStrings parameter, just return without error.
+        if (outStrings == NULL) return noErr;
+        
+        // Defines an array that contains the pop-up menu item names.
+        CFStringRef	strings [] = {
+            kMenuItem_Ring_Sine,
+            kMenuItem_Ring_Square
+        };
+        
+        // Creates a new immutable array containing the menu item names, and places the array
+        // in the outStrings output parameter.
+        *outStrings = CFArrayCreate (
+                                     NULL,
+                                     (const void **) strings,
+                                     (sizeof (strings) / sizeof (strings [0])),
+                                     NULL
+                                     );
+        return noErr;
     }
     return kAudioUnitErr_InvalidParameter;
 }
@@ -389,8 +540,9 @@ TremoloUnit::TremoloUnitKernel::TremoloUnitKernel (AUEffectBase *inAudioUnit ) :
 // need to clear any buffers. We simply reinitialize the variables that were initialized on
 // instantiation of the kernel object.
 void TremoloUnit::TremoloUnitKernel::Reset() {
-//	mCurrentScale		= 0;
 	mSamplesProcessed	= 0;
+    fade = 0;
+    head = 0;
     for (int i = 0; i < kMaximumValue_Tremolo_Freq; i++) {
         lastDelay[i] = 0;
     }
@@ -411,111 +563,151 @@ void TremoloUnit::TremoloUnitKernel::Process (
 										//   unit consists of silence, with a TRUE value indicating 
 										//   silence.
 ) {
-	// Ignores the request to perform the Process method if the input to the audio unit is silence.
 	if (!ioSilence) {
-
 		// Assigns a pointer variable to the start of the audio sample input buffer.
 		const Float32 *sourceP = inSourceP;
 
 		// Assigns a pointer variable to the start of the audio sample output buffer.
 		Float32	*destP = inDestP,
-//				inputSample,			// The current audio sample to process.
-//				outputSample,			// The current audio output sample resulting from one iteration of the
-										//   processing loop.
+				ring,
+                ringDepth,              //   processing loop.
                 tremoloDepth;			// The tremolo depth requested by the user via the audio unit's view.
-//              samplesPerTremoloCycle;	// The number of audio samples in one cycle of the tremolo waveform.
-//				rawTremoloGain,			// The tremolo gain for the current audio sample, as stored in the wave table.
-//				tremoloGain;			// The adjusted tremolo gain for the current audio sample, considering the
-										//   Depth parameter.
         int     tremoloFrequency,		// The tremolo frequency requested by the user via the audio unit's view.
-                samplesPerTremoloCycle;
+                samplesPerTremoloCycle,
+                samplesPerRingCycle;
 				
 		int		tremoloWaveform, speed, signature;		// The tremolo waveform type requested by the user via the audio unit's view.
+        int		ringWaveform, ringSpeed, ringSignature;		// The tremolo waveform type requested by the user via the audio unit's view.
         
-		// Once per input buffer, gets the tremolo frequency (in Hz) from the user 
-		//	via the audio unit view.
         tremoloFrequency = GetParameter (kParameter_Frequency);
+        if (tremoloFrequency != lastLength) {
+            if (tremoloFrequency	< kMinimumValue_Tremolo_Freq)
+                tremoloFrequency	= kMinimumValue_Tremolo_Freq;
+            if (tremoloFrequency	> kMaximumValue_Tremolo_Freq)
+                tremoloFrequency	= kMaximumValue_Tremolo_Freq;
+            lastLength = tremoloFrequency;
+            fade = 0;
+        }
         signature = (int) GetParameter(kParameter_Signature);
+        if (signature != lastSignature) {
+            if (signature	< kMinimumValue_Signature)
+                signature	= kMinimumValue_Signature;
+            if (signature	> kMaximumValue_Signature)
+                signature	= kMaximumValue_Signature;
+            lastSignature = signature;
+            fade = 0;
+        }
         speed = (int) GetParameter(kParameter_Speed);
+        if (speed != lastSpeed) {
+            if (speed		< kMinimumValue_Speed)
+                speed		= kMinimumValue_Speed;
+            if (speed		> kMaximumValue_Speed)
+                speed		= kMaximumValue_Speed;
+            lastSpeed = speed;
+            fade = 0;
+        }
 		tremoloDepth = GetParameter (kParameter_Depth);
+        if (tremoloDepth != lastDepth) {
+            if (tremoloDepth		< kMinimumValue_Tremolo_Depth)
+                tremoloDepth		= kMinimumValue_Tremolo_Depth;
+            if (tremoloDepth		> kMaximumValue_Tremolo_Depth)
+                tremoloDepth		= kMaximumValue_Tremolo_Depth;
+            lastDepth = tremoloDepth;
+        }
 		tremoloWaveform =  (int) GetParameter (kParameter_Waveform);
+        if (tremoloWaveform != lastDirection) {
+            lastDirection = tremoloWaveform;
+            fade = 0;
+        }
+        ring = GetParameter(kParameter_Ring);
+        if (ring		< kMinimumValue_Ring)
+            ring		= kMinimumValue_Ring;
+        if (ring		> kMaximumValue_Ring)
+            ring		= kMaximumValue_Ring;
+        if (ring != lastRing) {
+            lastRing = ring;
+        }
+        ringSignature = (int) GetParameter(kParameter_Signature);
+        if (signature != lastSignature) {
+            if (ringSignature	< kMinimumValue_Signature)
+                ringSignature	= kMinimumValue_Signature;
+            if (ringSignature	> kMaximumValue_Signature)
+                ringSignature	= kMaximumValue_Signature;
+            lastRingSignature = ringSignature;
+            fade = 0;
+        }
+        ringSpeed = (int) GetParameter(kParameter_Speed);
+        if (speed != lastSpeed) {
+            if (ringSpeed		< kMinimumValue_Speed)
+                ringSpeed		= kMinimumValue_Speed;
+            if (ringSpeed		> kMaximumValue_Speed)
+                ringSpeed		= kMaximumValue_Speed;
+            lastRingSpeed = ringSpeed;
+            fade = 0;
+        }
+        ringDepth = GetParameter (kParameter_Depth);
+        if (ringDepth != lastDepth) {
+            if (ringDepth		< kMinimumValue_Tremolo_Depth)
+                ringDepth		= kMinimumValue_Tremolo_Depth;
+            if (ringDepth		> kMaximumValue_Tremolo_Depth)
+                ringDepth		= kMaximumValue_Tremolo_Depth;
+            lastRingDepth = ringDepth;
+        }
+        ringWaveform =  (int) GetParameter (kParameter_Waveform);
+        if (ringWaveform != lastRingDirection) {
+            lastRingDirection = ringWaveform;
+            fade = 0;
+        }
 		
 		// Assigns a pointer to the wave table for the user-selected tremolo wave form.
 		if (tremoloWaveform == kSineWave_Tremolo_Waveform)  {
             direction = true;
-//			waveArrayPointer = &mSine [0];
 		} else {
             direction = false;
-//			waveArrayPointer = &mSquare [0];
 		}
-		
-		// Performs bounds checking on the parameters.
-		if (tremoloFrequency	< kMinimumValue_Tremolo_Freq)
-			tremoloFrequency	= kMinimumValue_Tremolo_Freq;
-		if (tremoloFrequency	> kMaximumValue_Tremolo_Freq)
-			tremoloFrequency	= kMaximumValue_Tremolo_Freq;
-        if (signature	< kMinimumValue_Signature)
-            signature	= kMinimumValue_Signature;
-        if (signature	> kMaximumValue_Signature)
-            signature	= kMaximumValue_Signature;
-        if (speed		< kMinimumValue_Speed)
-            speed		= kMinimumValue_Speed;
-        if (speed		> kMaximumValue_Speed)
-            speed		= kMaximumValue_Speed;
-		if (tremoloDepth		< kMinimumValue_Tremolo_Depth)
-			tremoloDepth		= kMinimumValue_Tremolo_Depth;
-		if (tremoloDepth		> kMaximumValue_Tremolo_Depth)
-			tremoloDepth		= kMaximumValue_Tremolo_Depth;
         
-		// Calculates the number of audio samples per cycle of tremolo frequency.
+        if (ringWaveform == kSineWave_Ring_Waveform)  {
+            ringDirection = true;
+        } else {
+            ringDirection = false;
+        }
+        
         Float64		bpm;
         OSStatus	err	= mAudioUnit->CallHostBeatAndTempo(NULL, &bpm);
         
         if (err == noErr) {
             bps = bpm/60;
         }
-        
-        signature = 4;
-        speed = 4;
-        
+
         samplesPerTremoloCycle = mSampleFrequency*tremoloFrequency/(bps*signature*speed);
-        
         if (head > samplesPerTremoloCycle) {
             head = 0;
         }
-        
-//        if (samplesPerTremoloCycle != rate) {
-//            if (head + samplesPerTremoloCycle > maxDelaySamples) {
-//                shift = maxDelaySamples - samplesPerTremoloCycle;
-//                head = head - shift;
-//            }
-//            shift = head;
-//            head = 0;
-//        }
-        
-		// Calculates the scaling factor to use for applying the wave table to the current sampling
-		//  frequency and tremolo frequency.
-//		mNextScale				= kWaveArraySize / samplesPerTremoloCycle;
-			
-//        const Float32 *sourceP = inSourceP;
-//        Float32 *destP = inDestP;
+        samplesPerRingCycle = mSampleFrequency*tremoloFrequency/(bps*ringSignature*ringSpeed);
+        if (ringHead > samplesPerRingCycle) {
+            ringHead = 0;
+        }
+
         int n = inSamplesToProcess;
-        Float32 mix = 0.7;
-        
-        // Apply the filter on the input and write to the output
-        // This code isn't optimized and is written for clarity...
         float last = *sourceP;
         int i = head;
+        int j = ringHead;
         while(n--) {
-            lastDelay[head] = *sourceP + (tremoloDepth*lastDelay[head]);
+            lastDelay[head] = last + (tremoloDepth*lastDelay[head]) + ring*(ringDepth*(last*lastDelay[ringHead]));
             head = (head+1) % (samplesPerTremoloCycle);
+            ringHead = (ringHead+1) % (samplesPerRingCycle);
             last = *sourceP++;
-            if (direction) {
-                i = head;
-            } else {
-                i = samplesPerTremoloCycle-head;
-            }
-            *destP++ = (1-mix)*(lastDelay[i] + last) + (mix)*(lastDelay[i]*last);
+            if ((head == 0) || (ringHead == 0)) { fade = 0; }
+            if (direction) { i = head; }
+            else { i = samplesPerTremoloCycle-head; }
+            if (ringDirection) { j = ringHead; }
+            else { j = samplesPerRingCycle-ringHead; }
+            if ((head < ramp) || (ringHead < ramp)) { fade +=1/ramp; }
+            
+            else if ((head >= samplesPerTremoloCycle-ramp) || (head >= samplesPerTremoloCycle-ramp)) { fade -= 1/ramp;}
+            else { fade = 1; }
+            *destP++ = fade*lastDelay[i] + last;
+//            *destP++ = (1-ring/7)*(fade*lastDelay[i] + last) + ring*(fade*lastDelay[i]*last);
         }
 	}
 }

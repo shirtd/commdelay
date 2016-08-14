@@ -22,25 +22,25 @@ Tremolo Effect AU
 #pragma mark ____TremoloUnit Parameter Constants
 
 // Provides the user interface name for the Frequency parameter.
-static CFStringRef kParamName_Tremolo_Freq		= CFSTR ("frequency");
+static CFStringRef kParamName_Tremolo_Freq		= CFSTR ("length");
 // Defines a constant for the default value for the Frequency parameter, anticipating a 
 //  unit of Hertz to be defined in the implementation file.
 static const int kDefaultValue_Tremolo_Freq	= 4;
 // Defines a constant for the minimum value for the Frequency parameter.
-static const int kMinimumValue_Tremolo_Freq	= 1;
+static const int kMinimumValue_Tremolo_Freq	= 2;
 // Defines a constant for the maximum value for the Frequency parameter.
-static const int kMaximumValue_Tremolo_Freq	= kMinimumValue_Tremolo_Freq*32;
+static const int kMaximumValue_Tremolo_Freq	= 32;
 static const long maxDelaySamples = 512*512;
 
 static CFStringRef kParamName_Signature		= CFSTR ("signature");
 static const int kDefaultValue_Signature	= 4;
 static const int kMinimumValue_Signature	= 1;
-static const int kMaximumValue_Signature	= 7;
+static const int kMaximumValue_Signature	= 5;
 
 static CFStringRef kParamName_Speed		= CFSTR ("speed");
 static const int kDefaultValue_Speed	= 1;
 static const int kMinimumValue_Speed	= 1;
-static const int kMaximumValue_Speed	= 7;
+static const int kMaximumValue_Speed	= 4;
 
 static CFStringRef kParamName_Tremolo_Depth		= CFSTR ("depth");
 static const float kDefaultValue_Tremolo_Depth	= 0.4;
@@ -54,47 +54,57 @@ static const int kDefaultValue_Tremolo_Waveform	= kSineWave_Tremolo_Waveform;
 
 // Defines menu item names for the waveform parameter
 static CFStringRef kMenuItem_Tremolo_Sine		= CFSTR ("forward");
-static CFStringRef kMenuItem_Tremolo_Square		= CFSTR ("reverse");
+static CFStringRef kMenuItem_Tremolo_Square		= CFSTR ("backwards");
 
-//static CFStringRef kParamName_Unit	= CFSTR ("unit");
-//static const int kSamples_Unit = 1;
-//static const int kMSeconds_Unit	= 2;
-//static const int kDefaultValue_Unit	= kSamples_Unit;
-//
-//// Defines menu item names for the waveform parameter
-//static CFStringRef kMenuItem_Samples		= CFSTR ("samples/delay");
-//static CFStringRef kMenuItem_MSeconds	= CFSTR ("ms/delay");
+static CFStringRef kParamName_Ring	= CFSTR ("ring");
+static const float kDefaultValue_Ring	= 0.5;
+static const float kMinimumValue_Ring	= 0.0;
+static const float kMaximumValue_Ring	= 5.0;
 
-// Defines constants for identifying the parameters; defines the total number 
-//  of parameters.
+static CFStringRef kParamName_Ring_Signature		= CFSTR ("ring signature");
+static const int kDefaultValue_Ring_Signature	= 4;
+static const int kMinimumValue_Ring_Signature	= 1;
+static const int kMaximumValue_Ring_Signature	= 5;
+
+static CFStringRef kParamName_Ring_Speed		= CFSTR ("ring speed");
+static const int kDefaultValue_Ring_Speed	= 1;
+static const int kMinimumValue_Ring_Speed	= 1;
+static const int kMaximumValue_Ring_Speed	= 4;
+
+static CFStringRef kParamName_Ring_Depth		= CFSTR ("ring depth");
+static const float kDefaultValue_Ring_Depth	= 0.4;
+static const float kMinimumValue_Ring_Depth	= 0.0;
+static const float kMaximumValue_Ring_Depth	= 1.0;
+
+static CFStringRef kParamName_Ring_Waveform	= CFSTR ("ring direction");
+static const int kSineWave_Ring_Waveform = 1;
+static const int kSquareWave_Ring_Waveform	= 2;
+static const int kDefaultValue_Ring_Waveform= kSineWave_Ring_Waveform;
+
+// Defines menu item names for the waveform parameter
+static CFStringRef kMenuItem_Ring_Sine		= CFSTR ("ring forward");
+static CFStringRef kMenuItem_Ring_Square		= CFSTR ("ring backwards");
 enum {
     kParameter_Frequency	= 0,
     kParameter_Signature    = 1,
     kParameter_Speed        = 2,
-	kParameter_Depth		= 3,
-	kParameter_Waveform		= 4,
-//    kParameter_Unit         = 3,
-	kNumberOfParameters		= 5
+    kParameter_Depth		= 3,
+    kParameter_Waveform		= 4,
+    kParameter_Ring         = 5,
+    kParameter_Ring_Signature = 6,
+    kParameter_Ring_Speed = 7,
+    kParameter_Ring_Depth = 8,
+    kParameter_Ring_Waveform = 9,
+	kNumberOfParameters = 10
 };
 
 #pragma mark ____TremoloUnit Factory Preset Constants
 
-// Defines a constant for the frequency value for the "Slow & Gentle" factory preset.
-static const long kParameter_Preset_Frequency_Slow	= 1600;
-
-// Defines a constant for the frequency value for the "Fast & Hard" factory preset.
-static const long kParameter_Preset_Frequency_Fast	= 200;
-
-// Defines a constant for the depth value for the "Slow & Gentle" factory preset.
+static const long kParameter_Preset_Frequency_Slow	= 8;
+static const long kParameter_Preset_Frequency_Fast	= 1;
 static const float kParameter_Preset_Depth_Slow		= 0.2;
-
-// Defines a constant for the depth value for the "Fast & Hard" factory preset.
 static const float kParameter_Preset_Depth_Fast		= 0.7;
-
-// Defines a constant for the waveform value for the "Slow & Gentle" factory preset.
 static const float kParameter_Preset_Waveform_Slow	= kSineWave_Tremolo_Waveform;
-
-// Defines a constant for the waveform value for the "Fast & Hard" factory preset.
 static const float kParameter_Preset_Waveform_Fast	= kSquareWave_Tremolo_Waveform;
 
 enum {
@@ -201,41 +211,38 @@ protected:
         virtual void Reset ();
 		
 		private:
-//			enum	{kWaveArraySize = 2000};	// The number of points in the wave table.
-//			float	mSine [kWaveArraySize];		// The wave table for the tremolo sine wave.
-//			float	mSquare [kWaveArraySize];	// The wave table for the tremolo square wave.
-//			float	*waveArrayPointer;			// Points to the wave table to use for the current audio input buffer.
 			Float32 mSampleFrequency;			// The "sample rate" of the audio signal being processed
-			long	mSamplesProcessed;			// The number of samples processed since the audio unit
-												//   started rendering or since this variable was last
-												//   reset to 0. We have to keep track of this because
-												//   we vary the tremolo continuously and independently
-												//   of the input buffer size.
+			long	mSamplesProcessed;
 			enum	{sampleLimit = (int) 10E6};	// To keep the value of mSamplesProcessed within a 
-												//   reasonable limit. 10E6 is equivalent to the number   
-												//   of samples in 100 seconds of 96 kHz audio.
-//			float	mCurrentScale;				// There are two scaling factors to allow the audio unit
-												//   to switch to a new scaling factor at the beginning
-												//   of the tremolo waveform, no matter when the user
-												//   changes the tremolo frequency. mCurrentScale is 
-												//   the scaling factor in use.
-//			float	mNextScale;					// The scaling factor that the user most recently requested
-												//   by moving the tremolo frequency slider
-//            long     rate;
+
+            float bps = 1;
         
-//            float    fbk;
-            float bps;
+            int head = 0;
+            int ringHead = 0;
         
-            int head;
+            int ramp = 256;
         
-//            int shift = 0;
+            float fade = 0;
+        
+//            bool fadeOn = true;
         
             bool direction = true;
+            bool ringDirection = false;
         
-//            int rate = 4096*4;
-        
-            // 2D delay array.
             Float32 lastDelay[maxDelaySamples];
+        
+            int lastLength = 1;
+            int lastSignature = 1;
+            int lastSpeed = 1;
+            float lastDepth = 0;
+            int lastDirection = 1;
+        
+            float lastRing = 0;
+            int lastRingSignature = 1;
+            int lastRingSpeed = 1;
+            float lastRingDepth = 0;
+            int lastRingDirection = 1;
+        
 	};
 };
 

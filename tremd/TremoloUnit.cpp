@@ -89,7 +89,7 @@ ComponentResult TremoloUnit::GetParameterInfo (
 					kParamName_Tremolo_Freq,
 					false
 				);
-				outParameterInfo.unit			= kAudioUnitParameterUnit_Hertz;
+				outParameterInfo.unit			= kAudioUnitParameterUnit_Milliseconds;
 					// Sets the unit of measurement for the Frequency parameter to Hertz.
 				outParameterInfo.minValue		= kMinimumValue_Tremolo_Freq;
 					// Sets the minimum value for the Frequency parameter.
@@ -344,33 +344,33 @@ OSStatus TremoloUnit::NewFactoryPresetSet (
 //
 // (In the Xcode template, the header file contains the call to the superclass constructor.)
 TremoloUnit::TremoloUnitKernel::TremoloUnitKernel (AUEffectBase *inAudioUnit ) : AUKernelBase (inAudioUnit),
-	mSamplesProcessed (0), mCurrentScale (0)
+	mSamplesProcessed (0)//, mCurrentScale (0)
 {	
 	// Generates a wave table that represents one cycle of a sine wave, normalized so that
 	//  it never goes negative and so it ranges between 0 and 1; this sine wave specifies 
 	//  how to vary the volume during one cycle of tremolo.
-	for (int i = 0; i < kWaveArraySize; ++i) {
-		double radians = i * 2.0 * M_PI / kWaveArraySize;
-		mSine [i] = (sin (radians) + 1.0) * 0.5;
-	}
+//	for (int i = 0; i < kWaveArraySize; ++i) {
+//		double radians = i * 2.0 * M_PI / kWaveArraySize;
+//		mSine [i] = (sin (radians) + 1.0) * 0.5;
+//	}
 
 	// Does the same for a pseudo square wave, with nice rounded corners to avoid pops.
-	for (int i = 0; i < kWaveArraySize; ++i) {
-		double radians = i * 2.0 * M_PI / kWaveArraySize;
-		radians = radians + 0.32; // shift the wave over for a smoother start
-		mSquare [i] =
-			(
-				sin (radians) +	// Sums the odd harmonics, scaled for a nice final waveform
-				0.3 * sin (3 * radians) +
-				0.15 * sin (5 * radians) +
-				0.075 * sin (7 * radians) +
-				0.0375 * sin (9 * radians) +
-				0.01875 * sin (11 * radians) +
-				0.009375 * sin (13 * radians) +
-				0.8			// Shifts the value so it doesn't go negative.
-			) * 0.63;		// Scales the waveform so the peak value is close 
-							//  to unity gain.
-	}
+//	for (int i = 0; i < kWaveArraySize; ++i) {
+//		double radians = i * 2.0 * M_PI / kWaveArraySize;
+//		radians = radians + 0.32; // shift the wave over for a smoother start
+//		mSquare [i] =
+//			(
+//				sin (radians) +	// Sums the odd harmonics, scaled for a nice final waveform
+//				0.3 * sin (3 * radians) +
+//				0.15 * sin (5 * radians) +
+//				0.075 * sin (7 * radians) +
+//				0.0375 * sin (9 * radians) +
+//				0.01875 * sin (11 * radians) +
+//				0.009375 * sin (13 * radians) +
+//				0.8			// Shifts the value so it doesn't go negative.
+//			) * 0.63;		// Scales the waveform so the peak value is close 
+//							//  to unity gain.
+//	}
 
 	// Gets the samples per second of the audio stream provided to the audio unit. 
 	// Obtaining this value here in the constructor assumes that the sample rate
@@ -389,7 +389,7 @@ TremoloUnit::TremoloUnitKernel::TremoloUnitKernel (AUEffectBase *inAudioUnit ) :
 // need to clear any buffers. We simply reinitialize the variables that were initialized on
 // instantiation of the kernel object.
 void TremoloUnit::TremoloUnitKernel::Reset() {
-	mCurrentScale		= 0;
+//	mCurrentScale		= 0;
 	mSamplesProcessed	= 0;
     for (int i = 0; i < kMaximumValue_Tremolo_Freq; i++) {
         lastDelay[i] = 0;
@@ -422,33 +422,31 @@ void TremoloUnit::TremoloUnitKernel::Process (
 //				inputSample,			// The current audio sample to process.
 //				outputSample,			// The current audio output sample resulting from one iteration of the
 										//   processing loop.
-				tremoloDepth,			// The tremolo depth requested by the user via the audio unit's view.
-                samplesPerTremoloCycle;	// The number of audio samples in one cycle of the tremolo waveform.
+                tremoloDepth;			// The tremolo depth requested by the user via the audio unit's view.
+//              samplesPerTremoloCycle;	// The number of audio samples in one cycle of the tremolo waveform.
 //				rawTremoloGain,			// The tremolo gain for the current audio sample, as stored in the wave table.
 //				tremoloGain;			// The adjusted tremolo gain for the current audio sample, considering the
 										//   Depth parameter.
-        int     tremoloFrequency;		// The tremolo frequency requested by the user via the audio unit's view.
+        int     tremoloFrequency,		// The tremolo frequency requested by the user via the audio unit's view.
+                samplesPerTremoloCycle;
 				
-		int		tremoloWaveform;		// The tremolo waveform type requested by the user via the audio unit's view.
-
-		
+		int		tremoloWaveform, speed, signature;		// The tremolo waveform type requested by the user via the audio unit's view.
+        
 		// Once per input buffer, gets the tremolo frequency (in Hz) from the user 
 		//	via the audio unit view.
-		tremoloFrequency = GetParameter (kParameter_Frequency);
-		
-		// Once per input buffer, gets the depth (in percent) from the user via 
-		//	the audio unit view.
+        tremoloFrequency = GetParameter (kParameter_Frequency);
+        signature = (int) GetParameter(kParameter_Signature);
+        speed = (int) GetParameter(kParameter_Speed);
 		tremoloDepth = GetParameter (kParameter_Depth);
-
-		// Once per input buffer, gets the tremolo waveform type from the user via 
-		//	the audio unit view.
 		tremoloWaveform =  (int) GetParameter (kParameter_Waveform);
 		
 		// Assigns a pointer to the wave table for the user-selected tremolo wave form.
 		if (tremoloWaveform == kSineWave_Tremolo_Waveform)  {
-			waveArrayPointer = &mSine [0];
+            direction = true;
+//			waveArrayPointer = &mSine [0];
 		} else {
-			waveArrayPointer = &mSquare [0];
+            direction = false;
+//			waveArrayPointer = &mSquare [0];
 		}
 		
 		// Performs bounds checking on the parameters.
@@ -456,32 +454,68 @@ void TremoloUnit::TremoloUnitKernel::Process (
 			tremoloFrequency	= kMinimumValue_Tremolo_Freq;
 		if (tremoloFrequency	> kMaximumValue_Tremolo_Freq)
 			tremoloFrequency	= kMaximumValue_Tremolo_Freq;
-
+        if (signature	< kMinimumValue_Signature)
+            signature	= kMinimumValue_Signature;
+        if (signature	> kMaximumValue_Signature)
+            signature	= kMaximumValue_Signature;
+        if (speed		< kMinimumValue_Speed)
+            speed		= kMinimumValue_Speed;
+        if (speed		> kMaximumValue_Speed)
+            speed		= kMaximumValue_Speed;
 		if (tremoloDepth		< kMinimumValue_Tremolo_Depth)
 			tremoloDepth		= kMinimumValue_Tremolo_Depth;
 		if (tremoloDepth		> kMaximumValue_Tremolo_Depth)
 			tremoloDepth		= kMaximumValue_Tremolo_Depth;
-		
+        
 		// Calculates the number of audio samples per cycle of tremolo frequency.
-		samplesPerTremoloCycle	= mSampleFrequency / tremoloFrequency;
-		
-		// Calculates the scaling factor to use for applying the wave table to the current sampling 
+        Float64		bpm;
+        OSStatus	err	= mAudioUnit->CallHostBeatAndTempo(NULL, &bpm);
+        
+        if (err == noErr) {
+            bps = bpm/60;
+        }
+        
+        signature = 4;
+        speed = 4;
+        
+        samplesPerTremoloCycle = mSampleFrequency*tremoloFrequency/(bps*signature*speed);
+        
+        if (head > samplesPerTremoloCycle) {
+            head = 0;
+        }
+        
+//        if (samplesPerTremoloCycle != rate) {
+//            if (head + samplesPerTremoloCycle > maxDelaySamples) {
+//                shift = maxDelaySamples - samplesPerTremoloCycle;
+//                head = head - shift;
+//            }
+//            shift = head;
+//            head = 0;
+//        }
+        
+		// Calculates the scaling factor to use for applying the wave table to the current sampling
 		//  frequency and tremolo frequency.
-		mNextScale				= kWaveArraySize / samplesPerTremoloCycle;
+//		mNextScale				= kWaveArraySize / samplesPerTremoloCycle;
 			
 //        const Float32 *sourceP = inSourceP;
 //        Float32 *destP = inDestP;
         int n = inSamplesToProcess;
-        Float32 mix = 0.6;
+        Float32 mix = 0.7;
         
         // Apply the filter on the input and write to the output
         // This code isn't optimized and is written for clarity...
         float last = *sourceP;
+        int i = head;
         while(n--) {
-            lastDelay[tremoloFrequency-head] = *sourceP + (tremoloDepth*lastDelay[tremoloFrequency-head]);
-            head = (head+1) % tremoloFrequency;
+            lastDelay[head] = *sourceP + (tremoloDepth*lastDelay[head]);
+            head = (head+1) % (samplesPerTremoloCycle);
             last = *sourceP++;
-            *destP++ = mix*(lastDelay[head] + last) + (1-mix)*(lastDelay[head]*last);
+            if (direction) {
+                i = head;
+            } else {
+                i = samplesPerTremoloCycle-head;
+            }
+            *destP++ = (1-mix)*(lastDelay[i] + last) + (mix)*(lastDelay[i]*last);
         }
 	}
 }

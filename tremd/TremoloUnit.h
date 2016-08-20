@@ -20,86 +20,99 @@ Tremolo Effect AU
 // Constants for parameters and  factory presets
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #pragma mark ____TremoloUnit Parameter Constants
-static CFStringRef kParamName_Tremolo_Freq		= CFSTR ("length");
-static const int kDefaultValue_Tremolo_Freq	= 4;
-static const int kMinimumValue_Tremolo_Freq	= 1;
-static const int kMaximumValue_Tremolo_Freq	= 32;
+static CFStringRef kParamName_Mix = CFSTR ("mix");
+static const float kDefaultValue_Mix = 0.5;
+static const float kMinimumValue_Mix = 0.0;
+static const float kMaximumValue_Mix = 1.0;
+
+static CFStringRef kParamName_Length = CFSTR ("length");
+static const int kDefaultValue_Length = 8;
+static const int kMinimumValue_Length = 1;
+static const int kMaximumValue_Length = 32;
 static const long maxDelaySamples = 512*512;
 
-static CFStringRef kParamName_Signature		= CFSTR ("signature");
-static const int kDefaultValue_Signature	= 4;
-static const int kMinimumValue_Signature	= 1;
-static const int kMaximumValue_Signature	= 4;
+static CFStringRef kParamName_Signature	= CFSTR ("signature");
+static const int kDefaultValue_Signature = 1;
+static const int kMinimumValue_Signature = 1;
+static const int kMaximumValue_Signature = 5;
 
-static CFStringRef kParamName_Speed		= CFSTR ("speed");
-static const int kDefaultValue_Speed	= 1;
-static const int kMinimumValue_Speed	= 1;
-static const int kMaximumValue_Speed	= 5;
+static CFStringRef kParamName_Speed	= CFSTR ("speed");
+static const int kDefaultValue_Speed = 1;
+static const int kMinimumValue_Speed = 1;
+static const int kMaximumValue_Speed = 4;
 
-static CFStringRef kParamName_Tremolo_Depth		= CFSTR ("depth");
-static const float kDefaultValue_Tremolo_Depth	= 0.4;
-static const float kMinimumValue_Tremolo_Depth	= 0.0;
-static const float kMaximumValue_Tremolo_Depth	= 1.0;
+static CFStringRef kParamName_Depth	= CFSTR ("depth");
+static const float kDefaultValue_Depth = 0.6;
+static const float kMinimumValue_Depth = 0.0;
+static const float kMaximumValue_Depth = 1.0;
 
-static CFStringRef kParamName_Tremolo_Waveform	= CFSTR ("direction");
-static const int kSineWave_Tremolo_Waveform		= 1;
-static const int kSquareWave_Tremolo_Waveform	= 2;
-static const int kDefaultValue_Tremolo_Waveform	= kSineWave_Tremolo_Waveform;
+static CFStringRef kParamName_Direction	= CFSTR ("direction");
+static const int kForward_Direction	= 1;
+static const int kBackward_Direction = 2;
+static const int kDefaultValue_Direction = kForward_Direction;
 
-static CFStringRef kMenuItem_Tremolo_Sine		= CFSTR ("forward");
-static CFStringRef kMenuItem_Tremolo_Square		= CFSTR ("backwards");
+static CFStringRef kMenuItem_Forward = CFSTR ("forward");
+static CFStringRef kMenuItem_Backward = CFSTR ("backward");
 
 static CFStringRef kParamName_Ring	= CFSTR ("ring");
-static const float kDefaultValue_Ring	= 0.5;
-static const float kMinimumValue_Ring	= 0.0;
-static const float kMaximumValue_Ring	= 4.0;
+static const float kDefaultValue_Ring = 0.0;
+static const float kMinimumValue_Ring = 0.0;
+static const float kMaximumValue_Ring = 4.0;
 
-static CFStringRef kParamName_Ring_Signature		= CFSTR ("ring signature");
-static const int kDefaultValue_Ring_Signature	= 4;
-static const int kMinimumValue_Ring_Signature	= 1;
-static const int kMaximumValue_Ring_Signature	= 5;
+static CFStringRef kParamName_Ring_Signature = CFSTR ("ring signature");
+static const int kDefaultValue_Ring_Signature = 1;
+static const int kMinimumValue_Ring_Signature = 1;
+static const int kMaximumValue_Ring_Signature = 5;
 
-static CFStringRef kParamName_Ring_Speed		= CFSTR ("ring speed");
-static const int kDefaultValue_Ring_Speed	= 1;
-static const int kMinimumValue_Ring_Speed	= 1;
-static const int kMaximumValue_Ring_Speed	= 4;
+static CFStringRef kParamName_Ring_Speed = CFSTR ("ring speed");
+static const int kDefaultValue_Ring_Speed = 1;
+static const int kMinimumValue_Ring_Speed = 1;
+static const int kMaximumValue_Ring_Speed = 4;
 
-static CFStringRef kParamName_Ring_Depth		= CFSTR ("ring depth");
+static CFStringRef kParamName_Ring_Depth = CFSTR ("ring depth");
 static const float kDefaultValue_Ring_Depth	= 0.4;
 static const float kMinimumValue_Ring_Depth	= 0.0;
 static const float kMaximumValue_Ring_Depth	= 1.0;
 
-static CFStringRef kParamName_Ring_Waveform	= CFSTR ("ring direction");
-static const int kSineWave_Ring_Waveform = 1;
-static const int kSquareWave_Ring_Waveform	= 2;
-static const int kDefaultValue_Ring_Waveform= kSineWave_Ring_Waveform;
+static CFStringRef kParamName_Ring_Direction = CFSTR ("ring direction");
+static const int kForward_Ring_Direction = 1;
+static const int kBackward_Ring_Direction = 2;
+static const int kDefaultValue_Ring_Direction= kForward_Ring_Direction;
 
-static CFStringRef kParamName_Signal_Power		= CFSTR ("signal power");
-static const float kDefaultValue_Signal_Power	= 0.0;
-static const float kMinimumValue_Signal_Power	= 0.0;
-static const float kMaximumValue_Signal_Power	= 4.0;
+static CFStringRef kMenuItem_Ring_Forward = CFSTR ("forward");
+static CFStringRef kMenuItem_Ring_Backward = CFSTR ("backward");
 
-static CFStringRef kParamName_Delay_Power		= CFSTR ("delay power");
-static const float kDefaultValue_Delay_Power	= 0.0;
-static const float kMinimumValue_Delay_Power	= 0.0;
-static const float kMaximumValue_Delay_Power	= 4.0;
+static CFStringRef kParamName_Signal_Power = CFSTR ("signal power");
+static const float kDefaultValue_Signal_Power = 0.0;
+static const float kMinimumValue_Signal_Power = 0.0;
+static const float kMaximumValue_Signal_Power = 4.0;
 
-static CFStringRef kMenuItem_Ring_Sine		= CFSTR ("ring forward");
-static CFStringRef kMenuItem_Ring_Square		= CFSTR ("ring backwards");
+static CFStringRef kParamName_Delay_Power = CFSTR ("delay power");
+static const float kDefaultValue_Delay_Power = 0.0;
+static const float kMinimumValue_Delay_Power = 0.0;
+static const float kMaximumValue_Delay_Power = 4.0;
+
+static CFStringRef kParamName_Fade = CFSTR ("fade");
+static const int kDefaultValue_Fade	= 5;
+static const int kMinimumValue_Fade	= 0;
+static const int kMaximumValue_Fade	= 10;
+
 enum {
-    kParameter_Frequency	= 0,
-    kParameter_Signature    = 1,
-    kParameter_Speed        = 2,
-    kParameter_Depth		= 3,
-    kParameter_Waveform		= 4,
-    kParameter_Ring         = 5,
-    kParameter_Ring_Signature = 6,
-    kParameter_Ring_Speed = 7,
-    kParameter_Ring_Depth = 8,
-    kParameter_Ring_Waveform = 9,
-    kParameter_Signal_Power = 10,
-    kParameter_Delay_Power = 11,
-	kNumberOfParameters = 12
+    kParameter_Mix              = 0,
+    kParameter_Length           = 1,
+    kParameter_Signature        = 2,
+    kParameter_Speed            = 3,
+    kParameter_Depth            = 4,
+    kParameter_Direction		= 5,
+    kParameter_Ring             = 6,
+    kParameter_Ring_Signature   = 7,
+    kParameter_Ring_Speed       = 8,
+    kParameter_Ring_Depth       = 9,
+    kParameter_Ring_Direction   = 10,
+    kParameter_Signal_Power     = 11,
+    kParameter_Delay_Power      = 12,
+    kParameter_Fade             = 13,
+	kNumberOfParameters = 14
 };
 
 #pragma mark ____TremoloUnit Factory Preset Constants
@@ -108,8 +121,8 @@ static const long kParameter_Preset_Frequency_Slow	= 8;
 static const long kParameter_Preset_Frequency_Fast	= 1;
 static const float kParameter_Preset_Depth_Slow		= 0.2;
 static const float kParameter_Preset_Depth_Fast		= 0.7;
-static const float kParameter_Preset_Waveform_Slow	= kSineWave_Tremolo_Waveform;
-static const float kParameter_Preset_Waveform_Fast	= kSquareWave_Tremolo_Waveform;
+static const float kParameter_Preset_Forward	= kForward_Direction;
+static const float kParameter_Preset_Backward	= kBackward_Direction;
 
 enum {
 	// Defines a constant for the "Slow & Gentle" factory preset.
@@ -224,8 +237,6 @@ protected:
             int dhead = 0;
             int rhead = 0;
         
-            int direction = 1;
-            bool ringDirection = false;
 
             float last;
             float prev = 0;
@@ -233,7 +244,13 @@ protected:
             float lastDelay[maxDelaySamples];
             float delay[maxDelaySamples];
         
+            float lastRingDelay[maxDelaySamples];
+            float ringDelay[maxDelaySamples];
+        
             int lastRate = 4096*4;
+            int lastRingRate = 2048*3;
+        
+            float lastMix = 0.5;
         
             int lastLength = 1;
             int lastSignature = 1;
@@ -249,6 +266,8 @@ protected:
         
             float lastSignalPower= 0;
             float lastDelayPower = 0;
+        
+            int lastFade = 1;
 
     };
 };

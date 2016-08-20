@@ -27,7 +27,7 @@ static CFStringRef kParamName_Tremolo_Freq		= CFSTR ("length");
 //  unit of Hertz to be defined in the implementation file.
 static const int kDefaultValue_Tremolo_Freq	= 4;
 // Defines a constant for the minimum value for the Frequency parameter.
-static const int kMinimumValue_Tremolo_Freq	= 2;
+static const int kMinimumValue_Tremolo_Freq	= 1;
 // Defines a constant for the maximum value for the Frequency parameter.
 static const int kMaximumValue_Tremolo_Freq	= 32;
 static const long maxDelaySamples = 512*512;
@@ -35,12 +35,12 @@ static const long maxDelaySamples = 512*512;
 static CFStringRef kParamName_Signature		= CFSTR ("signature");
 static const int kDefaultValue_Signature	= 4;
 static const int kMinimumValue_Signature	= 1;
-static const int kMaximumValue_Signature	= 5;
+static const int kMaximumValue_Signature	= 4;
 
 static CFStringRef kParamName_Speed		= CFSTR ("speed");
 static const int kDefaultValue_Speed	= 1;
 static const int kMinimumValue_Speed	= 1;
-static const int kMaximumValue_Speed	= 4;
+static const int kMaximumValue_Speed	= 5;
 
 static CFStringRef kParamName_Tremolo_Depth		= CFSTR ("depth");
 static const float kDefaultValue_Tremolo_Depth	= 0.4;
@@ -59,7 +59,7 @@ static CFStringRef kMenuItem_Tremolo_Square		= CFSTR ("backwards");
 static CFStringRef kParamName_Ring	= CFSTR ("ring");
 static const float kDefaultValue_Ring	= 0.5;
 static const float kMinimumValue_Ring	= 0.0;
-static const float kMaximumValue_Ring	= 5.0;
+static const float kMaximumValue_Ring	= 4.0;
 
 static CFStringRef kParamName_Ring_Signature		= CFSTR ("ring signature");
 static const int kDefaultValue_Ring_Signature	= 4;
@@ -81,6 +81,16 @@ static const int kSineWave_Ring_Waveform = 1;
 static const int kSquareWave_Ring_Waveform	= 2;
 static const int kDefaultValue_Ring_Waveform= kSineWave_Ring_Waveform;
 
+static CFStringRef kParamName_Signal_Power		= CFSTR ("signal power");
+static const float kDefaultValue_Signal_Power	= 0.0;
+static const float kMinimumValue_Signal_Power	= 0.0;
+static const float kMaximumValue_Signal_Power	= 4.0;
+
+static CFStringRef kParamName_Delay_Power		= CFSTR ("delay power");
+static const float kDefaultValue_Delay_Power	= 0.0;
+static const float kMinimumValue_Delay_Power	= 0.0;
+static const float kMaximumValue_Delay_Power	= 4.0;
+
 // Defines menu item names for the waveform parameter
 static CFStringRef kMenuItem_Ring_Sine		= CFSTR ("ring forward");
 static CFStringRef kMenuItem_Ring_Square		= CFSTR ("ring backwards");
@@ -95,7 +105,9 @@ enum {
     kParameter_Ring_Speed = 7,
     kParameter_Ring_Depth = 8,
     kParameter_Ring_Waveform = 9,
-	kNumberOfParameters = 10
+    kParameter_Signal_Power = 10,
+    kParameter_Delay_Power = 11,
+	kNumberOfParameters = 12
 };
 
 #pragma mark ____TremoloUnit Factory Preset Constants
@@ -213,23 +225,25 @@ protected:
 		private:
 			Float32 mSampleFrequency;			// The "sample rate" of the audio signal being processed
 			long	mSamplesProcessed;
-			enum	{sampleLimit = (int) 10E6};	// To keep the value of mSamplesProcessed within a 
 
             float bps = 1;
         
             int head = 0;
-            int ringHead = 0;
+            int dhead = 0;
+            int rhead = 0;
         
-            int ramp = 256;
-        
-            float fade = 0;
-        
-//            bool fadeOn = true;
-        
-            bool direction = true;
+            int direction = 1;
             bool ringDirection = false;
+
+            float last;
+            float prev = 0;
+            int lastCrossing = 0;
+            int firstCrossing = 0;
         
-            Float32 lastDelay[maxDelaySamples];
+            float lastDelay[maxDelaySamples];
+            float delay[maxDelaySamples];
+        
+            int lastRate = 4096*4;
         
             int lastLength = 1;
             int lastSignature = 1;
@@ -243,7 +257,10 @@ protected:
             float lastRingDepth = 0;
             int lastRingDirection = 1;
         
-	};
+            float lastSignalPower= 0;
+            float lastDelayPower = 0;
+
+    };
 };
 
 #endif

@@ -2,22 +2,4 @@
 <Bucket
    type = "1"
    version = "2.0">
-   <Breakpoints>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "TremoloUnit.cpp"
-            timestampString = "492841316.83718"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "531"
-            endingLineNumber = "531"
-            landmarkName = "TremoloUnit::TremoloUnitKernel::Process ( const Float32 *inSourceP, // The audio sample input buffer. Float32 *inDestP, // The audio sample output buffer. UInt32 inSamplesToProcess, // The number of samples in the input buffer. UInt32 inNumChannels, // The number of input channels. This is always equal to 1 // because there is always one kernel object instantiated // per channel of audio. bool &amp;ioSilence"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-   </Breakpoints>
 </Bucket>

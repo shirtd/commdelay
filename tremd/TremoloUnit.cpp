@@ -58,6 +58,7 @@ TremoloUnit::TremoloUnit (AudioUnit component) : AUEffectBase (component) {
                   kParameter_Ring,
                   kDefaultValue_Ring
                   );
+    
     SetParameter (
                   kParameter_Ring_Signature,
                   kDefaultValue_Ring_Signature
@@ -77,6 +78,16 @@ TremoloUnit::TremoloUnit (AudioUnit component) : AUEffectBase (component) {
     SetParameter (
                   kParameter_Ring_Waveform,
                   kDefaultValue_Ring_Waveform
+                  );
+    
+    SetParameter (
+                  kParameter_Signal_Power,
+                  kDefaultValue_Signal_Power
+                  );
+    
+    SetParameter (
+                  kParameter_Delay_Power,
+                  kDefaultValue_Delay_Power
                   );
 
 	// Also during instantiation, sets the preset menu to indicate the default preset,
@@ -258,6 +269,32 @@ ComponentResult TremoloUnit::GetParameterInfo (
                 outParameterInfo.minValue		= kSineWave_Tremolo_Waveform;
                 outParameterInfo.maxValue		= kSquareWave_Tremolo_Waveform;
                 outParameterInfo.defaultValue	= kDefaultValue_Tremolo_Waveform;
+                break;
+                
+            case kParameter_Signal_Power:
+                // Invoked when the view needs information for the kTremoloParam_Depth parameter.
+                AUBase::FillInParameterName (
+                                             outParameterInfo,
+                                             kParamName_Signal_Power,
+                                             false
+                                             );
+                outParameterInfo.unit			= kAudioUnitParameterUnit_Percent;
+                outParameterInfo.minValue		= kMinimumValue_Signal_Power;
+                outParameterInfo.maxValue		= kMaximumValue_Signal_Power;
+                outParameterInfo.defaultValue	= kDefaultValue_Signal_Power;
+                break;
+                
+            case kParameter_Delay_Power:
+                // Invoked when the view needs information for the kTremoloParam_Depth parameter.
+                AUBase::FillInParameterName (
+                                             outParameterInfo,
+                                             kParamName_Delay_Power,
+                                             false
+                                             );
+                outParameterInfo.unit			= kAudioUnitParameterUnit_Percent;
+                outParameterInfo.minValue		= kMinimumValue_Delay_Power;
+                outParameterInfo.maxValue		= kMaximumValue_Delay_Power;
+                outParameterInfo.defaultValue	= kDefaultValue_Delay_Power;
                 break;
 
 			default:
@@ -528,9 +565,11 @@ TremoloUnit::TremoloUnitKernel::TremoloUnitKernel (AUEffectBase *inAudioUnit ) :
 	// will not change during one instantiation of the audio unit.
 	mSampleFrequency = GetSampleRate ();
     
-    for (int i = 0; i < kMaximumValue_Tremolo_Freq; i++) {
-        lastDelay[i] = 0;
-    }
+    memset(lastDelay,0,sizeof(float)*maxDelaySamples);
+    memset(delay,0,sizeof(float)*maxDelaySamples);
+//    for (int i = 0; i < maxDelaySamples; i++) {
+//        lastDelay[i] = 0;
+//    }
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -541,11 +580,12 @@ TremoloUnit::TremoloUnitKernel::TremoloUnitKernel (AUEffectBase *inAudioUnit ) :
 // instantiation of the kernel object.
 void TremoloUnit::TremoloUnitKernel::Reset() {
 	mSamplesProcessed	= 0;
-    fade = 0;
     head = 0;
-    for (int i = 0; i < kMaximumValue_Tremolo_Freq; i++) {
-        lastDelay[i] = 0;
-    }
+    memset(lastDelay,0,sizeof(float)*maxDelaySamples);
+    memset(delay,0,sizeof(float)*maxDelaySamples);
+//    for (int i = 0; i < maxDelaySamples; i++) {
+//        lastDelay[i] = 0;
+//    }
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -571,13 +611,14 @@ void TremoloUnit::TremoloUnitKernel::Process (
 		Float32	*destP = inDestP,
 				ring,
                 ringDepth,              //   processing loop.
-                tremoloDepth;			// The tremolo depth requested by the user via the audio unit's view.
+                tremoloDepth,
+                signalPower,
+                delayPower;			// The tremolo depth requested by the user via the audio unit's view.
         int     tremoloFrequency,		// The tremolo frequency requested by the user via the audio unit's view.
-                samplesPerTremoloCycle,
-                samplesPerRingCycle;
+                samplesPerTremoloCycle;
 				
 		int		tremoloWaveform, speed, signature;		// The tremolo waveform type requested by the user via the audio unit's view.
-        int		ringWaveform, ringSpeed, ringSignature;		// The tremolo waveform type requested by the user via the audio unit's view.
+        int		ringWaveform, ringSpeed, ringSignature;
         
         tremoloFrequency = GetParameter (kParameter_Frequency);
         if (tremoloFrequency != lastLength) {
@@ -586,7 +627,6 @@ void TremoloUnit::TremoloUnitKernel::Process (
             if (tremoloFrequency	> kMaximumValue_Tremolo_Freq)
                 tremoloFrequency	= kMaximumValue_Tremolo_Freq;
             lastLength = tremoloFrequency;
-            fade = 0;
         }
         signature = (int) GetParameter(kParameter_Signature);
         if (signature != lastSignature) {
@@ -595,7 +635,6 @@ void TremoloUnit::TremoloUnitKernel::Process (
             if (signature	> kMaximumValue_Signature)
                 signature	= kMaximumValue_Signature;
             lastSignature = signature;
-            fade = 0;
         }
         speed = (int) GetParameter(kParameter_Speed);
         if (speed != lastSpeed) {
@@ -604,7 +643,6 @@ void TremoloUnit::TremoloUnitKernel::Process (
             if (speed		> kMaximumValue_Speed)
                 speed		= kMaximumValue_Speed;
             lastSpeed = speed;
-            fade = 0;
         }
 		tremoloDepth = GetParameter (kParameter_Depth);
         if (tremoloDepth != lastDepth) {
@@ -612,12 +650,17 @@ void TremoloUnit::TremoloUnitKernel::Process (
                 tremoloDepth		= kMinimumValue_Tremolo_Depth;
             if (tremoloDepth		> kMaximumValue_Tremolo_Depth)
                 tremoloDepth		= kMaximumValue_Tremolo_Depth;
-            lastDepth = tremoloDepth;
+//            lastDepth = tremoloDepth;
         }
 		tremoloWaveform =  (int) GetParameter (kParameter_Waveform);
         if (tremoloWaveform != lastDirection) {
-            lastDirection = tremoloWaveform;
-            fade = 0;
+            if (tremoloWaveform == kSineWave_Tremolo_Waveform)  {
+                direction = 1;
+            } else {
+                direction = -1;
+            }
+//            lastDirection = tremoloWaveform;
+//            fade = 0;
         }
         ring = GetParameter(kParameter_Ring);
         if (ring		< kMinimumValue_Ring)
@@ -634,7 +677,6 @@ void TremoloUnit::TremoloUnitKernel::Process (
             if (ringSignature	> kMaximumValue_Signature)
                 ringSignature	= kMaximumValue_Signature;
             lastRingSignature = ringSignature;
-            fade = 0;
         }
         ringSpeed = (int) GetParameter(kParameter_Speed);
         if (speed != lastSpeed) {
@@ -643,10 +685,9 @@ void TremoloUnit::TremoloUnitKernel::Process (
             if (ringSpeed		> kMaximumValue_Speed)
                 ringSpeed		= kMaximumValue_Speed;
             lastRingSpeed = ringSpeed;
-            fade = 0;
         }
-        ringDepth = GetParameter (kParameter_Depth);
-        if (ringDepth != lastDepth) {
+        ringDepth = GetParameter (kParameter_Ring_Depth);
+        if (ringDepth != lastRingDepth) {
             if (ringDepth		< kMinimumValue_Tremolo_Depth)
                 ringDepth		= kMinimumValue_Tremolo_Depth;
             if (ringDepth		> kMaximumValue_Tremolo_Depth)
@@ -655,61 +696,106 @@ void TremoloUnit::TremoloUnitKernel::Process (
         }
         ringWaveform =  (int) GetParameter (kParameter_Waveform);
         if (ringWaveform != lastRingDirection) {
+            if (ringWaveform == kSineWave_Ring_Waveform)  {
+                ringDirection = 1;
+            } else {
+                ringDirection = -1;
+            }
             lastRingDirection = ringWaveform;
-            fade = 0;
         }
-		
-		// Assigns a pointer to the wave table for the user-selected tremolo wave form.
-		if (tremoloWaveform == kSineWave_Tremolo_Waveform)  {
-            direction = true;
-		} else {
-            direction = false;
-		}
-        
-        if (ringWaveform == kSineWave_Ring_Waveform)  {
-            ringDirection = true;
-        } else {
-            ringDirection = false;
+        signalPower = GetParameter (kParameter_Signal_Power);
+        if (signalPower != lastSignalPower) {
+            if (signalPower		< kMinimumValue_Signal_Power)
+                signalPower		= kMinimumValue_Signal_Power;
+            if (signalPower		> kMaximumValue_Signal_Power)
+                signalPower		= kMaximumValue_Signal_Power;
+            lastSignalPower = signalPower;
+        }
+        delayPower = GetParameter (kParameter_Delay_Power);
+        if (delayPower != lastDelayPower) {
+            if (delayPower		< kMinimumValue_Delay_Power)
+                delayPower		= kMinimumValue_Delay_Power;
+            if (delayPower		> kMaximumValue_Delay_Power)
+                delayPower		= kMaximumValue_Delay_Power;
+            lastDelayPower = delayPower;
         }
         
         Float64		bpm;
         OSStatus	err	= mAudioUnit->CallHostBeatAndTempo(NULL, &bpm);
+        if (err == noErr) { bps = bpm/60; }
         
-        if (err == noErr) {
-            bps = bpm/60;
-        }
-
-        samplesPerTremoloCycle = mSampleFrequency*tremoloFrequency/(bps*signature*speed);
-        if (head > samplesPerTremoloCycle) {
-            head = 0;
-        }
-        samplesPerRingCycle = mSampleFrequency*tremoloFrequency/(bps*ringSignature*ringSpeed);
-        if (ringHead > samplesPerRingCycle) {
-            ringHead = 0;
-        }
-
+        samplesPerTremoloCycle = (int) (mSampleFrequency*tremoloFrequency/(2*bps*signature));
+        samplesPerTremoloCycle = samplesPerTremoloCycle*2;
+        
         int n = inSamplesToProcess;
-        float last = *sourceP;
-        int i = head;
-        int j = ringHead;
+        last = *sourceP;
         while(n--) {
-            lastDelay[head] = last + (tremoloDepth*lastDelay[head]) + ring*(ringDepth*(last*lastDelay[ringHead]));
-            head = (head+1) % (samplesPerTremoloCycle);
-            ringHead = (ringHead+1) % (samplesPerRingCycle);
+            if (head == 0) {
+                if (samplesPerTremoloCycle != lastRate) {
+                    lastRate = samplesPerTremoloCycle;
+                    memset(lastDelay,0,sizeof(float)*lastRate);
+                    memset(delay,0,sizeof(float)*lastRate);
+                }
+                if (tremoloDepth != lastDepth) {
+                    lastDepth = tremoloDepth;
+                }
+                if (direction != lastDirection) {
+                    lastDirection = direction;
+                    memset(lastDelay,0,sizeof(float)*lastRate);
+                    memset(delay,0,sizeof(float)*lastRate);
+                }
+            }
+
+            prev = last;
             last = *sourceP++;
-            if ((head == 0) || (ringHead == 0)) { fade = 0; }
-            if (direction) { i = head; }
-            else { i = samplesPerTremoloCycle-head; }
-            if (ringDirection) { j = ringHead; }
-            else { j = samplesPerRingCycle-ringHead; }
-            if ((head < ramp) || (ringHead < ramp)) { fade +=1/ramp; }
+            if (lastDirection > 0) {
+                dhead = head;
+            } else {
+                dhead = lastRate-head-1;
+            }
+            if (ringDirection) {
+                rhead = head;
+            } else {
+                rhead = lastRate-head-1;
+            }
             
-            else if ((head >= samplesPerTremoloCycle-ramp) || (head >= samplesPerTremoloCycle-ramp)) { fade -= 1/ramp;}
-            else { fade = 1; }
-            *destP++ = fade*lastDelay[i] + last;
-//            *destP++ = (1-ring/7)*(fade*lastDelay[i] + last) + ring*(fade*lastDelay[i]*last);
+            if (head == lastRate-1) {
+                *destP++ = (1-lastRingDepth)*last + lastRingDepth*(lastDelay[lastRate-1] + lastDelay[0])/2
+                            + ring*(last*(lastDelay[lastRate-1] + lastDelay[0])/2) + signalPower*powf(last,ringSignature)
+                            + delayPower*powf((lastDelay[lastRate-1] + lastDelay[0])/2,ringSpeed);
+            } else if (head == 0) {
+                *destP++ = (1-lastRingDepth)*last + lastRingDepth*(lastDelay[lastRate-1] + lastDelay[0])/2
+                            + ring*(last*(lastDelay[lastRate-1] + lastDelay[0])/2) + signalPower*powf(last,ringSignature)
+                            + delayPower*powf((lastDelay[lastRate-1] + lastDelay[0])/2,ringSpeed);
+            } else {
+                *destP++ = (1-lastRingDepth)*last + lastRingDepth*lastDelay[dhead]
+                            + ring*(last*lastDelay[rhead]) + signalPower*pow(last,ringSignature)
+                            + delayPower*pow(lastDelay[dhead],ringSpeed);
+            }
+            
+            if (((last > 0) && (prev < 0)) || ((last < 0) && (prev > 0))) {
+                lastCrossing = head;
+                if (firstCrossing == 0) {
+                    firstCrossing = head;
+                    for (int i = 0; i < firstCrossing; i++) {
+                        delay[i] = 0;
+                        lastDelay[i] = delay[i] + lastDepth*lastDelay[i];
+                    }
+                }
+            }
+            if (head == lastRate-1) {
+                for (int i = lastCrossing; i < lastRate; i++) {
+                    delay[i] = 0;
+                    lastDelay[i] = delay[i] + lastDepth*lastDelay[i];
+                }
+                firstCrossing = 0;
+                lastCrossing = lastRate-1;
+            } else {
+                delay[head] = last;
+                lastDelay[head] = delay[head] + lastDepth*lastDelay[head];
+            }
+            head = (head+1)%lastRate;
+            
         }
 	}
 }
-
-

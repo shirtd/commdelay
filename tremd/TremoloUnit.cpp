@@ -88,11 +88,7 @@ ComponentResult TremoloUnit::GetParameterInfo (
         switch (inParameterID) {
                 
             case kParameter_Mix:
-                AUBase::FillInParameterName (
-                                             outParameterInfo,
-                                             kParamName_Mix,
-                                             false
-                                             );
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Mix, false);
                 outParameterInfo.unit			= kAudioUnitParameterUnit_Percent;
                 outParameterInfo.minValue		= kMinimumValue_Mix;
                 outParameterInfo.maxValue		= kMaximumValue_Mix;
@@ -100,28 +96,17 @@ ComponentResult TremoloUnit::GetParameterInfo (
                 break;
 		
             case kParameter_Length:
-			// Invoked when the view needs information for the kTremoloParam_Frequency 
-			// parameter; defines how to represent this parameter in the user interface.
-				AUBase::FillInParameterName (
-                                             outParameterInfo,
-                                             kParamName_Length,
-                                             false
-				);
+				AUBase::FillInParameterName (outParameterInfo, kParamName_Length, false);
 				outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
 				outParameterInfo.minValue		= kMinimumValue_Length;
 				outParameterInfo.maxValue		= kMaximumValue_Length;
 				outParameterInfo.defaultValue	= kDefaultValue_Length;
-//				outParameterInfo.flags			|= kAudioUnitParameterFlag_DisplayLogarithmic;
+                // outParameterInfo.flags			|= kAudioUnitParameterFlag_DisplayLogarithmic;
                 // Adds a flag to indicate to the host that it should use a logarithmic control for the Frequency parameter.
 				break;
                 
             case kParameter_Signature:
-                // Invoked when the view needs information for the kTremoloParam_Depth parameter.
-                AUBase::FillInParameterName (
-                                             outParameterInfo,
-                                             kParamName_Signature,
-                                             false
-                                             );
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Signature, false);
                 outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
                 outParameterInfo.minValue		= kMinimumValue_Signature;
                 outParameterInfo.maxValue		= kMaximumValue_Signature;
@@ -129,12 +114,7 @@ ComponentResult TremoloUnit::GetParameterInfo (
                 break;
                 
             case kParameter_Speed:
-                // Invoked when the view needs information for the kTremoloParam_Depth parameter.
-                AUBase::FillInParameterName (
-                                             outParameterInfo,
-                                             kParamName_Speed,
-                                             false
-                                             );
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Speed, false);
                 outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
                 outParameterInfo.minValue		= kMinimumValue_Speed;
                 outParameterInfo.maxValue		= kMaximumValue_Speed;
@@ -142,12 +122,7 @@ ComponentResult TremoloUnit::GetParameterInfo (
                 break;
                 
             case kParameter_Depth:
-                // Invoked when the view needs information for the kTremoloParam_Depth parameter.
-                AUBase::FillInParameterName (
-                                             outParameterInfo,
-                                             kParamName_Depth,
-                                             false
-                                             );
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Depth, false);
                 outParameterInfo.unit			= kAudioUnitParameterUnit_Percent;
                 outParameterInfo.minValue		= kMinimumValue_Depth;
                 outParameterInfo.maxValue		= kMaximumValue_Depth;
@@ -155,12 +130,7 @@ ComponentResult TremoloUnit::GetParameterInfo (
                 break;
                 
             case kParameter_Direction:
-                // Invoked when the view needs information for the kTremoloParam_Direction parameter.
-                AUBase::FillInParameterName (
-                                             outParameterInfo,
-                                             kParamName_Direction,
-                                             false
-                                             );
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Direction, false);
                 outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
                 outParameterInfo.minValue		= kForward_Direction;
                 outParameterInfo.maxValue		= kBackward_Direction;
@@ -168,24 +138,14 @@ ComponentResult TremoloUnit::GetParameterInfo (
                 break;
                 
             case kParameter_Ring:
-                // Invoked when the view needs information for the kTremoloParam_Depth parameter.
-                AUBase::FillInParameterName (
-                                             outParameterInfo,
-                                             kParamName_Ring,
-                                             false
-                                             );
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Ring, false);
                 outParameterInfo.unit			= kAudioUnitParameterUnit_Percent;
                 outParameterInfo.minValue		= kMinimumValue_Ring;
                 outParameterInfo.maxValue		= kMaximumValue_Ring;
                 outParameterInfo.defaultValue	= kDefaultValue_Ring;
                 break;
             case kParameter_Ring_Signature:
-                // Invoked when the view needs information for the kTremoloParam_Depth parameter.
-                AUBase::FillInParameterName (
-                                             outParameterInfo,
-                                             kParamName_Ring_Signature,
-                                             false
-                                             );
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Ring_Signature, false);
                 outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
                 outParameterInfo.minValue		= kMinimumValue_Ring_Signature;
                 outParameterInfo.maxValue		= kMaximumValue_Ring_Signature;
@@ -193,12 +153,7 @@ ComponentResult TremoloUnit::GetParameterInfo (
                 break;
                 
             case kParameter_Ring_Speed:
-                // Invoked when the view needs information for the kTremoloParam_Depth parameter.
-                AUBase::FillInParameterName (
-                                             outParameterInfo,
-                                             kParamName_Ring_Speed,
-                                             false
-                                             );
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Ring_Speed, false);
                 outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
                 outParameterInfo.minValue		= kMinimumValue_Ring_Speed;
                 outParameterInfo.maxValue		= kMaximumValue_Ring_Speed;
@@ -206,12 +161,7 @@ ComponentResult TremoloUnit::GetParameterInfo (
                 break;
                 
             case kParameter_Ring_Depth:
-                // Invoked when the view needs information for the kTremoloParam_Depth parameter.
-                AUBase::FillInParameterName (
-                                             outParameterInfo,
-                                             kParamName_Ring_Depth,
-                                             false
-                                             );
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Ring_Depth, false);
                 outParameterInfo.unit			= kAudioUnitParameterUnit_Percent;
                 outParameterInfo.minValue		= kMinimumValue_Ring_Depth;
                 outParameterInfo.maxValue		= kMaximumValue_Ring_Depth;
@@ -219,12 +169,7 @@ ComponentResult TremoloUnit::GetParameterInfo (
                 break;
                 
             case kParameter_Ring_Direction:
-                // Invoked when the view needs information for the kTremoloParam_Direction parameter.
-                AUBase::FillInParameterName (
-                                             outParameterInfo,
-                                             kParamName_Ring_Direction,
-                                             false
-                                             );
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Ring_Direction, false);
                 outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
                 outParameterInfo.minValue		= kForward_Direction;
                 outParameterInfo.maxValue		= kBackward_Direction;
@@ -232,12 +177,7 @@ ComponentResult TremoloUnit::GetParameterInfo (
                 break;
                 
             case kParameter_Signal_Power:
-                // Invoked when the view needs information for the kTremoloParam_Depth parameter.
-                AUBase::FillInParameterName (
-                                             outParameterInfo,
-                                             kParamName_Signal_Power,
-                                             false
-                                             );
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Signal_Power, false);
                 outParameterInfo.unit			= kAudioUnitParameterUnit_Percent;
                 outParameterInfo.minValue		= kMinimumValue_Signal_Power;
                 outParameterInfo.maxValue		= kMaximumValue_Signal_Power;
@@ -245,12 +185,7 @@ ComponentResult TremoloUnit::GetParameterInfo (
                 break;
                 
             case kParameter_Delay_Power:
-                // Invoked when the view needs information for the kTremoloParam_Depth parameter.
-                AUBase::FillInParameterName (
-                                             outParameterInfo,
-                                             kParamName_Delay_Power,
-                                             false
-                                             );
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Delay_Power, false);
                 outParameterInfo.unit			= kAudioUnitParameterUnit_Percent;
                 outParameterInfo.minValue		= kMinimumValue_Delay_Power;
                 outParameterInfo.maxValue		= kMaximumValue_Delay_Power;
@@ -258,11 +193,7 @@ ComponentResult TremoloUnit::GetParameterInfo (
                 break;
             
             case kParameter_Fade:
-                AUBase::FillInParameterName (
-                                             outParameterInfo,
-                                             kParamName_Fade,
-                                             false
-                                             );
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Fade, false);
                 outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
                 outParameterInfo.minValue		= kMinimumValue_Fade;
                 outParameterInfo.maxValue		= kMaximumValue_Fade;
@@ -396,8 +327,7 @@ ComponentResult TremoloUnit::GetPresets (
 		NULL
 	);
 	
-	// Fills the factory presets array with values from the definitions in the TremoloUnit.h 
-	// file.
+	// Fills the factory presets array with values from the definitions in the TremoloUnit.h file.
 	for (int i = 0; i < kNumberPresets; ++i) {
 		CFArrayAppendValue (
 			presetsArray,
@@ -416,8 +346,7 @@ ComponentResult TremoloUnit::GetPresets (
 // The NewFactoryPresetSet method defines all the factory presets for an audio unit. Basically, 
 // for each preset, it invokes a series of SetParameter calls.
 
-// This method takes a single argument of type AUPreset, a structure containing a factory
-//  preset name and number.
+// This method takes a single argument of type AUPreset, a structure containing a factory preset name and number.
 OSStatus TremoloUnit::NewFactoryPresetSet (
 	const AUPreset &inNewFactoryPreset
 ) {
@@ -512,11 +441,9 @@ TremoloUnit::TremoloUnitKernel::TremoloUnitKernel (AUEffectBase *inAudioUnit ) :
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //	TremoloUnit::TremoloUnitKernel::Reset()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Because we're calculating each output sample based on a unique input sample, there's no 
-// need to clear any buffers. We simply reinitialize the variables that were initialized on
-// instantiation of the kernel object.
 void TremoloUnit::TremoloUnitKernel::Reset() {
 	mSamplesProcessed	= 0;
+    
     head = 0;
     rhead = 0;
     

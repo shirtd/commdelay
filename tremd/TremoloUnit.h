@@ -146,8 +146,6 @@ static AUPreset kPresets [kNumberPresets] = {
 //  "Slow & Gentle" preset.
 static const int kPreset_Default = kPreset_Slow;
 
-
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // TremoloUnit class
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -237,7 +235,6 @@ protected:
             int dhead = 0;
             int rhead = 0;
         
-
             float last;
             float prev = 0;
         
@@ -268,7 +265,6 @@ protected:
             float lastDelayPower = 0;
         
             int lastFade = 1;
-
     };
 };
 

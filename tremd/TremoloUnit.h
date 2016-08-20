@@ -20,15 +20,9 @@ Tremolo Effect AU
 // Constants for parameters and  factory presets
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #pragma mark ____TremoloUnit Parameter Constants
-
-// Provides the user interface name for the Frequency parameter.
 static CFStringRef kParamName_Tremolo_Freq		= CFSTR ("length");
-// Defines a constant for the default value for the Frequency parameter, anticipating a 
-//  unit of Hertz to be defined in the implementation file.
 static const int kDefaultValue_Tremolo_Freq	= 4;
-// Defines a constant for the minimum value for the Frequency parameter.
 static const int kMinimumValue_Tremolo_Freq	= 1;
-// Defines a constant for the maximum value for the Frequency parameter.
 static const int kMaximumValue_Tremolo_Freq	= 32;
 static const long maxDelaySamples = 512*512;
 
@@ -52,7 +46,6 @@ static const int kSineWave_Tremolo_Waveform		= 1;
 static const int kSquareWave_Tremolo_Waveform	= 2;
 static const int kDefaultValue_Tremolo_Waveform	= kSineWave_Tremolo_Waveform;
 
-// Defines menu item names for the waveform parameter
 static CFStringRef kMenuItem_Tremolo_Sine		= CFSTR ("forward");
 static CFStringRef kMenuItem_Tremolo_Square		= CFSTR ("backwards");
 
@@ -91,7 +84,6 @@ static const float kDefaultValue_Delay_Power	= 0.0;
 static const float kMinimumValue_Delay_Power	= 0.0;
 static const float kMaximumValue_Delay_Power	= 4.0;
 
-// Defines menu item names for the waveform parameter
 static CFStringRef kMenuItem_Ring_Sine		= CFSTR ("ring forward");
 static CFStringRef kMenuItem_Ring_Square		= CFSTR ("ring backwards");
 enum {
@@ -237,8 +229,6 @@ protected:
 
             float last;
             float prev = 0;
-            int lastCrossing = 0;
-            int firstCrossing = 0;
         
             float lastDelay[maxDelaySamples];
             float delay[maxDelaySamples];

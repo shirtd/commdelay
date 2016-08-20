@@ -524,45 +524,10 @@ OSStatus TremoloUnit::NewFactoryPresetSet (
 //  initializer. In addition to calling the appropriate superclasses, this code initializes two 
 //  member variables:
 //
-// mCurrentScale:		a factor for correlating points in the current wave table to
-//						the audio signal sampling frequency. to produce the desired
-//						tremolo frequency
-// mSamplesProcessed:	a global count of samples processed. it allows the tremolo effect
-//						to be continuous over data input buffer boundaries
-//
 // (In the Xcode template, the header file contains the call to the superclass constructor.)
 TremoloUnit::TremoloUnitKernel::TremoloUnitKernel (AUEffectBase *inAudioUnit ) : AUKernelBase (inAudioUnit),
 	mSamplesProcessed (0)//, mCurrentScale (0)
 {	
-	// Generates a wave table that represents one cycle of a sine wave, normalized so that
-	//  it never goes negative and so it ranges between 0 and 1; this sine wave specifies 
-	//  how to vary the volume during one cycle of tremolo.
-//	for (int i = 0; i < kWaveArraySize; ++i) {
-//		double radians = i * 2.0 * M_PI / kWaveArraySize;
-//		mSine [i] = (sin (radians) + 1.0) * 0.5;
-//	}
-
-	// Does the same for a pseudo square wave, with nice rounded corners to avoid pops.
-//	for (int i = 0; i < kWaveArraySize; ++i) {
-//		double radians = i * 2.0 * M_PI / kWaveArraySize;
-//		radians = radians + 0.32; // shift the wave over for a smoother start
-//		mSquare [i] =
-//			(
-//				sin (radians) +	// Sums the odd harmonics, scaled for a nice final waveform
-//				0.3 * sin (3 * radians) +
-//				0.15 * sin (5 * radians) +
-//				0.075 * sin (7 * radians) +
-//				0.0375 * sin (9 * radians) +
-//				0.01875 * sin (11 * radians) +
-//				0.009375 * sin (13 * radians) +
-//				0.8			// Shifts the value so it doesn't go negative.
-//			) * 0.63;		// Scales the waveform so the peak value is close 
-//							//  to unity gain.
-//	}
-
-	// Gets the samples per second of the audio stream provided to the audio unit. 
-	// Obtaining this value here in the constructor assumes that the sample rate
-	// will not change during one instantiation of the audio unit.
 	mSampleFrequency = GetSampleRate ();
     
     memset(lastDelay,0,sizeof(float)*maxDelaySamples);
@@ -606,18 +571,17 @@ void TremoloUnit::TremoloUnitKernel::Process (
 	if (!ioSilence) {
 		// Assigns a pointer variable to the start of the audio sample input buffer.
 		const Float32 *sourceP = inSourceP;
-
 		// Assigns a pointer variable to the start of the audio sample output buffer.
 		Float32	*destP = inDestP,
 				ring,
-                ringDepth,              //   processing loop.
+                ringDepth,
                 tremoloDepth,
                 signalPower,
-                delayPower;			// The tremolo depth requested by the user via the audio unit's view.
-        int     tremoloFrequency,		// The tremolo frequency requested by the user via the audio unit's view.
+                delayPower;
+        int     tremoloFrequency,
                 samplesPerTremoloCycle;
 				
-		int		tremoloWaveform, speed, signature;		// The tremolo waveform type requested by the user via the audio unit's view.
+		int		tremoloWaveform, speed, signature;
         int		ringWaveform, ringSpeed, ringSignature;
         
         tremoloFrequency = GetParameter (kParameter_Frequency);
@@ -650,7 +614,6 @@ void TremoloUnit::TremoloUnitKernel::Process (
                 tremoloDepth		= kMinimumValue_Tremolo_Depth;
             if (tremoloDepth		> kMaximumValue_Tremolo_Depth)
                 tremoloDepth		= kMaximumValue_Tremolo_Depth;
-//            lastDepth = tremoloDepth;
         }
 		tremoloWaveform =  (int) GetParameter (kParameter_Waveform);
         if (tremoloWaveform != lastDirection) {
@@ -659,8 +622,6 @@ void TremoloUnit::TremoloUnitKernel::Process (
             } else {
                 direction = -1;
             }
-//            lastDirection = tremoloWaveform;
-//            fade = 0;
         }
         ring = GetParameter(kParameter_Ring);
         if (ring		< kMinimumValue_Ring)
@@ -701,7 +662,6 @@ void TremoloUnit::TremoloUnitKernel::Process (
             } else {
                 ringDirection = -1;
             }
-            lastRingDirection = ringWaveform;
         }
         signalPower = GetParameter (kParameter_Signal_Power);
         if (signalPower != lastSignalPower) {
@@ -741,60 +701,49 @@ void TremoloUnit::TremoloUnitKernel::Process (
                 }
                 if (direction != lastDirection) {
                     lastDirection = direction;
-                    memset(lastDelay,0,sizeof(float)*lastRate);
-                    memset(delay,0,sizeof(float)*lastRate);
+                }
+                if (ringDirection != lastRingDirection) {
+                    lastRingDirection = ringDirection;
                 }
             }
 
             prev = last;
             last = *sourceP++;
+            
+            float mod = 6*sinf(pi*head/(lastRate));
+            if (mod < 0) {
+                mod = 0;
+            } else if (mod > 1) {
+                mod = 1;
+            }
+            
+            if (head == 0) {
+                delay[0] = last;
+            } else if (head == lastRate-1) {
+                delay[lastRate-1] = mod*(delay[lastRate-2] + delay[0] + last)/3;
+                lastDelay[lastRate-1] = delay[lastRate-1] + lastDepth*lastDelay[lastRate-1];
+                lastDelay[0] = 0;
+            } else {
+                delay[head] = mod*last;
+                lastDelay[head] = delay[head] + lastDepth*lastDelay[head];
+            }
+            
+            head = (head+1)%(lastRate);
+            
             if (lastDirection > 0) {
                 dhead = head;
             } else {
-                dhead = lastRate-head-1;
+                dhead = (lastRate-head)%(lastRate);
             }
             if (ringDirection) {
                 rhead = head;
             } else {
-                rhead = lastRate-head-1;
+                rhead = (lastRate-head)%(lastRate);
             }
             
-            if (head == lastRate-1) {
-                *destP++ = (1-lastRingDepth)*last + lastRingDepth*(lastDelay[lastRate-1] + lastDelay[0])/2
-                            + ring*(last*(lastDelay[lastRate-1] + lastDelay[0])/2) + signalPower*powf(last,ringSignature)
-                            + delayPower*powf((lastDelay[lastRate-1] + lastDelay[0])/2,ringSpeed);
-            } else if (head == 0) {
-                *destP++ = (1-lastRingDepth)*last + lastRingDepth*(lastDelay[lastRate-1] + lastDelay[0])/2
-                            + ring*(last*(lastDelay[lastRate-1] + lastDelay[0])/2) + signalPower*powf(last,ringSignature)
-                            + delayPower*powf((lastDelay[lastRate-1] + lastDelay[0])/2,ringSpeed);
-            } else {
-                *destP++ = (1-lastRingDepth)*last + lastRingDepth*lastDelay[dhead]
-                            + ring*(last*lastDelay[rhead]) + signalPower*pow(last,ringSignature)
-                            + delayPower*pow(lastDelay[dhead],ringSpeed);
-            }
-            
-            if (((last > 0) && (prev < 0)) || ((last < 0) && (prev > 0))) {
-                lastCrossing = head;
-                if (firstCrossing == 0) {
-                    firstCrossing = head;
-                    for (int i = 0; i < firstCrossing; i++) {
-                        delay[i] = 0;
-                        lastDelay[i] = delay[i] + lastDepth*lastDelay[i];
-                    }
-                }
-            }
-            if (head == lastRate-1) {
-                for (int i = lastCrossing; i < lastRate; i++) {
-                    delay[i] = 0;
-                    lastDelay[i] = delay[i] + lastDepth*lastDelay[i];
-                }
-                firstCrossing = 0;
-                lastCrossing = lastRate-1;
-            } else {
-                delay[head] = last;
-                lastDelay[head] = delay[head] + lastDepth*lastDelay[head];
-            }
-            head = (head+1)%lastRate;
+            *destP++ = (1-lastRingDepth)*last + lastRingDepth*lastDelay[dhead]
+                        + ring*(last*lastDelay[rhead]) + signalPower*pow(last,ringSignature)
+                        + delayPower*pow(lastDelay[dhead],ringSpeed);
             
         }
 	}

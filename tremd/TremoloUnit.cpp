@@ -31,25 +31,32 @@ TremoloUnit::TremoloUnit (AudioUnit component) : AUEffectBase (component) {
 	// During instantiation, sets up the parameters according to their defaults.
 	//	The parameter defaults should correspond to the settings for the default preset.
     
+    SetParameter (kParameter_Length, kDefaultValue_Length);
+    
+    SetParameter (kParameter_Direction, kDefaultValue_Direction);
     SetParameter (kParameter_Mix, kDefaultValue_Mix);
-    
-	SetParameter (kParameter_Length, kDefaultValue_Length);
-    
     SetParameter (kParameter_Signature, kDefaultValue_Signature);
     SetParameter (kParameter_Speed, kDefaultValue_Speed);
     SetParameter (kParameter_Depth, kDefaultValue_Depth);
-    SetParameter (kParameter_Direction, kDefaultValue_Direction);
+    SetParameter (kParameter_Delay_Power, kDefaultValue_Delay_Power);
+    SetParameter (kParameter_Delay_Power_Scale, kDefaultValue_Delay_Power_Scale);
     
+    SetParameter (kParameter_Ring_Direction, kDefaultValue_Ring_Direction);
+    SetParameter (kParameter_Ring_Mix, kDefaultValue_Ring_Mix);
     SetParameter (kParameter_Ring, kDefaultValue_Ring);
     SetParameter (kParameter_Ring_Signature, kDefaultValue_Ring_Signature);
     SetParameter (kParameter_Ring_Speed, kDefaultValue_Ring_Speed);
     SetParameter (kParameter_Ring_Depth, kDefaultValue_Ring_Depth);
-    SetParameter (kParameter_Ring_Direction, kDefaultValue_Ring_Direction);
     
+    SetParameter (kParameter_Signal_Power_Direction, kDefaultValue_Signal_Power_Direction);
     SetParameter (kParameter_Signal_Power, kDefaultValue_Signal_Power);
-    SetParameter (kParameter_Delay_Power, kDefaultValue_Delay_Power);
+    SetParameter (kParameter_Signal_Power_Scale, kDefaultValue_Signal_Power_Scale);
+    SetParameter (kParameter_Signal_Power_Signature, kDefaultValue_Signal_Power_Signature);
+    SetParameter (kParameter_Signal_Power_Speed, kDefaultValue_Signal_Power_Speed);
+    SetParameter (kParameter_Signal_Power_Depth, kDefaultValue_Signal_Power_Depth);
     
     SetParameter (kParameter_Fade, kDefaultValue_Fade);
+    SetParameter (kParameter_Duck, kDefaultValue_Duck);
 
 	// Also during instantiation, sets the preset menu to indicate the default preset,
 	//	which corresponds to the default parameters. It's possible to set this so a
@@ -87,6 +94,24 @@ ComponentResult TremoloUnit::GetParameterInfo (
 	if (inScope == kAudioUnitScope_Global) {
         switch (inParameterID) {
                 
+            case kParameter_Length:
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Length, false);
+                outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
+                outParameterInfo.minValue		= kMinimumValue_Length;
+                outParameterInfo.maxValue		= kMaximumValue_Length;
+                outParameterInfo.defaultValue	= kDefaultValue_Length;
+                // outParameterInfo.flags			|= kAudioUnitParameterFlag_DisplayLogarithmic;
+                // Adds a flag to indicate to the host that it should use a logarithmic control for the Frequency parameter.
+                break;
+                
+            case kParameter_Direction:
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Direction, false);
+                outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
+                outParameterInfo.minValue		= kForward_Direction;
+                outParameterInfo.maxValue		= kBackward_Direction;
+                outParameterInfo.defaultValue	= kDefaultValue_Direction;
+                break;
+                
             case kParameter_Mix:
                 AUBase::FillInParameterName (outParameterInfo, kParamName_Mix, false);
                 outParameterInfo.unit			= kAudioUnitParameterUnit_Percent;
@@ -94,16 +119,6 @@ ComponentResult TremoloUnit::GetParameterInfo (
                 outParameterInfo.maxValue		= kMaximumValue_Mix;
                 outParameterInfo.defaultValue	= kDefaultValue_Mix;
                 break;
-		
-            case kParameter_Length:
-				AUBase::FillInParameterName (outParameterInfo, kParamName_Length, false);
-				outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
-				outParameterInfo.minValue		= kMinimumValue_Length;
-				outParameterInfo.maxValue		= kMaximumValue_Length;
-				outParameterInfo.defaultValue	= kDefaultValue_Length;
-                // outParameterInfo.flags			|= kAudioUnitParameterFlag_DisplayLogarithmic;
-                // Adds a flag to indicate to the host that it should use a logarithmic control for the Frequency parameter.
-				break;
                 
             case kParameter_Signature:
                 AUBase::FillInParameterName (outParameterInfo, kParamName_Signature, false);
@@ -121,6 +136,22 @@ ComponentResult TremoloUnit::GetParameterInfo (
                 outParameterInfo.defaultValue	= kDefaultValue_Speed;
                 break;
                 
+            case kParameter_Delay_Power:
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Delay_Power, false);
+                outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
+                outParameterInfo.minValue		= kMinimumValue_Delay_Power;
+                outParameterInfo.maxValue		= kMaximumValue_Delay_Power;
+                outParameterInfo.defaultValue	= kDefaultValue_Delay_Power;
+                break;
+                
+            case kParameter_Delay_Power_Scale:
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Delay_Power_Scale, false);
+                outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
+                outParameterInfo.minValue		= kMinimumValue_Delay_Power_Scale;
+                outParameterInfo.maxValue		= kMaximumValue_Delay_Power_Scale;
+                outParameterInfo.defaultValue	= kDefaultValue_Delay_Power_Scale;
+                break;
+                
             case kParameter_Depth:
                 AUBase::FillInParameterName (outParameterInfo, kParamName_Depth, false);
                 outParameterInfo.unit			= kAudioUnitParameterUnit_Percent;
@@ -129,12 +160,20 @@ ComponentResult TremoloUnit::GetParameterInfo (
                 outParameterInfo.defaultValue	= kDefaultValue_Depth;
                 break;
                 
-            case kParameter_Direction:
-                AUBase::FillInParameterName (outParameterInfo, kParamName_Direction, false);
+            case kParameter_Ring_Direction:
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Ring_Direction, false);
                 outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
-                outParameterInfo.minValue		= kForward_Direction;
-                outParameterInfo.maxValue		= kBackward_Direction;
-                outParameterInfo.defaultValue	= kDefaultValue_Direction;
+                outParameterInfo.minValue		= kForward_Ring_Direction;
+                outParameterInfo.maxValue		= kBackward_Ring_Direction;
+                outParameterInfo.defaultValue	= kDefaultValue_Ring_Direction;
+                break;
+                
+            case kParameter_Ring_Mix:
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Ring_Mix, false);
+                outParameterInfo.unit			= kAudioUnitParameterUnit_Percent;
+                outParameterInfo.minValue		= kMinimumValue_Ring_Mix;
+                outParameterInfo.maxValue		= kMaximumValue_Ring_Mix;
+                outParameterInfo.defaultValue	= kDefaultValue_Ring_Mix;
                 break;
                 
             case kParameter_Ring:
@@ -168,28 +207,52 @@ ComponentResult TremoloUnit::GetParameterInfo (
                 outParameterInfo.defaultValue	= kDefaultValue_Ring_Depth;
                 break;
                 
-            case kParameter_Ring_Direction:
-                AUBase::FillInParameterName (outParameterInfo, kParamName_Ring_Direction, false);
+            case kParameter_Signal_Power_Direction:
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Signal_Power_Direction, false);
                 outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
-                outParameterInfo.minValue		= kForward_Direction;
-                outParameterInfo.maxValue		= kBackward_Direction;
-                outParameterInfo.defaultValue	= kDefaultValue_Direction;
+                outParameterInfo.minValue		= kForward_Signal_Power_Direction;
+                outParameterInfo.maxValue		= kBackward_Signal_Power_Direction;
+                outParameterInfo.defaultValue	= kDefaultValue_Signal_Power_Direction;
                 break;
                 
             case kParameter_Signal_Power:
                 AUBase::FillInParameterName (outParameterInfo, kParamName_Signal_Power, false);
-                outParameterInfo.unit			= kAudioUnitParameterUnit_Percent;
+                outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
                 outParameterInfo.minValue		= kMinimumValue_Signal_Power;
                 outParameterInfo.maxValue		= kMaximumValue_Signal_Power;
                 outParameterInfo.defaultValue	= kDefaultValue_Signal_Power;
                 break;
                 
-            case kParameter_Delay_Power:
-                AUBase::FillInParameterName (outParameterInfo, kParamName_Delay_Power, false);
+            case kParameter_Signal_Power_Scale:
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Signal_Power_Scale, false);
+                outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
+                outParameterInfo.minValue		= kMinimumValue_Signal_Power_Scale;
+                outParameterInfo.maxValue		= kMaximumValue_Signal_Power_Scale;
+                outParameterInfo.defaultValue	= kDefaultValue_Signal_Power_Scale;
+                break;
+                
+            case kParameter_Signal_Power_Signature:
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Signal_Power_Signature, false);
+                outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
+                outParameterInfo.minValue		= kMinimumValue_Signal_Power_Signature;
+                outParameterInfo.maxValue		= kMaximumValue_Signal_Power_Signature;
+                outParameterInfo.defaultValue	= kDefaultValue_Signal_Power_Signature;
+                break;
+                
+            case kParameter_Signal_Power_Speed:
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Signal_Power_Speed, false);
+                outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
+                outParameterInfo.minValue		= kMinimumValue_Signal_Power_Speed;
+                outParameterInfo.maxValue		= kMaximumValue_Signal_Power_Speed;
+                outParameterInfo.defaultValue	= kDefaultValue_Signal_Power_Speed;
+                break;
+                
+            case kParameter_Signal_Power_Depth:
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Signal_Power_Depth, false);
                 outParameterInfo.unit			= kAudioUnitParameterUnit_Percent;
-                outParameterInfo.minValue		= kMinimumValue_Delay_Power;
-                outParameterInfo.maxValue		= kMaximumValue_Delay_Power;
-                outParameterInfo.defaultValue	= kDefaultValue_Delay_Power;
+                outParameterInfo.minValue		= kMinimumValue_Signal_Power_Depth;
+                outParameterInfo.maxValue		= kMaximumValue_Signal_Power_Depth;
+                outParameterInfo.defaultValue	= kDefaultValue_Signal_Power_Depth;
                 break;
             
             case kParameter_Fade:
@@ -198,6 +261,14 @@ ComponentResult TremoloUnit::GetParameterInfo (
                 outParameterInfo.minValue		= kMinimumValue_Fade;
                 outParameterInfo.maxValue		= kMaximumValue_Fade;
                 outParameterInfo.defaultValue	= kDefaultValue_Fade;
+                break;
+                
+            case kParameter_Duck:
+                AUBase::FillInParameterName (outParameterInfo, kParamName_Duck, false);
+                outParameterInfo.unit			= kAudioUnitParameterUnit_Indexed;
+                outParameterInfo.minValue		= kMinimumValue_Duck;
+                outParameterInfo.maxValue		= kMaximumValue_Duck;
+                outParameterInfo.defaultValue	= kDefaultValue_Duck;
                 break;
 
 			default:
@@ -253,6 +324,29 @@ ComponentResult TremoloUnit::GetParameterValueStrings (
         CFStringRef	strings [] = {
             kMenuItem_Ring_Forward,
             kMenuItem_Ring_Backward
+        };
+        
+        // Creates a new immutable array containing the menu item names, and places the array
+        // in the outStrings output parameter.
+        *outStrings = CFArrayCreate (
+                                     NULL,
+                                     (const void **) strings,
+                                     (sizeof (strings) / sizeof (strings [0])),
+                                     NULL
+                                     );
+        return noErr;
+    }
+    if ((inScope == kAudioUnitScope_Global) && (inParameterID == kParameter_Signal_Power_Direction)) {
+        // This method applies only to the Direction parameter, which is in the global scope.
+        
+        // When this method gets called by the AUBase::DispatchGetPropertyInfo method, which
+        // provides a null value for the outStrings parameter, just return without error.
+        if (outStrings == NULL) return noErr;
+        
+        // Defines an array that contains the pop-up menu item names.
+        CFStringRef	strings [] = {
+            kMenuItem_Signal_Power_Forward,
+            kMenuItem_Signal_Power_Backward
         };
         
         // Creates a new immutable array containing the menu item names, and places the array
@@ -436,6 +530,9 @@ TremoloUnit::TremoloUnitKernel::TremoloUnitKernel (AUEffectBase *inAudioUnit ) :
 
     memset(lastRingDelay,0,sizeof(float)*maxDelaySamples);
     memset(ringDelay,0,sizeof(float)*maxDelaySamples);
+    
+    memset(lastSignalPowerDelay,0,sizeof(float)*maxDelaySamples);
+    memset(signalPowerDelay,0,sizeof(float)*maxDelaySamples);
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -446,12 +543,19 @@ void TremoloUnit::TremoloUnitKernel::Reset() {
     
     head = 0;
     rhead = 0;
+    phead = 0;
+    
+//    first = true;
+//    firstRing = true;
     
     memset(lastDelay,0,sizeof(float)*maxDelaySamples);
     memset(delay,0,sizeof(float)*maxDelaySamples);
     
     memset(lastRingDelay,0,sizeof(float)*maxDelaySamples);
     memset(ringDelay,0,sizeof(float)*maxDelaySamples);
+    
+    memset(lastSignalPowerDelay,0,sizeof(float)*maxDelaySamples);
+    memset(signalPowerDelay,0,sizeof(float)*maxDelaySamples);
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -473,32 +577,45 @@ void TremoloUnit::TremoloUnitKernel::Process (
 		// Assigns a pointer variable to the start of the audio sample output buffer.
 		Float32	*destP = inDestP,
                 mix,
+                ringMix,
 				ring,
                 ringDepth,
+                signalPowerDepth,
                 depth,
                 signalPower,
-                delayPower;
+                signalPowerScale,
+                delayPower,
+                delayPowerScale;
         int     length,
                 samplesPerDelay,
                 samplesPerRingDelay,
+                samplesPerSignalPowerDelay,
                 direction,
                 speed,
                 signature,
                 ringDirection,
                 ringSpeed,
                 ringSignature,
-                fade;
+                fade,
+                duck,
+                signalPowerDirection,
+                signalPowerSignature,
+                signalPowerSpeed;
         
         // ---- UPDATE PARAMETERS ---- //
-        mix = GetParameter (kParameter_Mix);
-        if (mix < kMinimumValue_Mix) mix = kMinimumValue_Mix;
-        if (mix > kMaximumValue_Mix) mix = kMaximumValue_Mix;
-        if (mix != lastMix) lastMix= mix;
-        
         length = GetParameter (kParameter_Length);
         if (length < kMinimumValue_Length) length = kMinimumValue_Length;
         if (length > kMaximumValue_Length) length = kMaximumValue_Length;
         if (length != lastLength) lastLength = length;
+        
+        direction =  (int) GetParameter (kParameter_Direction);
+        if (direction == kForward_Direction) direction = 1;
+        else direction = -1;
+        
+        mix = GetParameter (kParameter_Mix);
+        if (mix < kMinimumValue_Mix) mix = kMinimumValue_Mix;
+        if (mix > kMaximumValue_Mix) mix = kMaximumValue_Mix;
+        if (mix != lastMix) lastMix= mix;
         
         signature = (int) GetParameter(kParameter_Signature);
         if (signature < kMinimumValue_Signature) signature = kMinimumValue_Signature;
@@ -515,58 +632,92 @@ void TremoloUnit::TremoloUnitKernel::Process (
         if (depth > kMaximumValue_Depth) depth = kMaximumValue_Depth;
         if (depth != lastDepth) lastDepth = depth;
         
-		direction =  (int) GetParameter (kParameter_Direction);
-        if (direction == kForward_Direction) direction = 1;
-        else direction = -1;
+        delayPower = GetParameter (kParameter_Delay_Power);
+        if (delayPower < kMinimumValue_Delay_Power) delayPower = kMinimumValue_Delay_Power;
+        if (delayPower > kMaximumValue_Delay_Power) delayPower = kMaximumValue_Delay_Power;
+        if (delayPower != lastDelayPower) lastDelayPower = delayPower;
+        
+        delayPowerScale = GetParameter (kParameter_Delay_Power_Scale);
+        if (delayPowerScale < kMinimumValue_Delay_Power_Scale) delayPower = kMinimumValue_Delay_Power_Scale;
+        if (delayPowerScale > kMaximumValue_Delay_Power_Scale) delayPower = kMaximumValue_Delay_Power_Scale;
+        if (delayPowerScale != lastDelayPowerScale) lastDelayPowerScale = delayPowerScale;
+        
+        ringDirection =  (int) GetParameter (kParameter_Ring_Direction);
+        if (ringDirection == kForward_Ring_Direction) ringDirection = 1;
+        else ringDirection = -1;
+        
+        ringMix = GetParameter(kParameter_Ring_Mix);
+        if (ringMix < kMinimumValue_Ring_Mix) ringMix = kMinimumValue_Ring_Mix;
+        if (ringMix > kMaximumValue_Ring_Mix) ringMix = kMaximumValue_Ring_Mix;
+        if (ringMix != lastRingMix) lastRingMix = ringMix;
         
         ring = GetParameter(kParameter_Ring);
         if (ring < kMinimumValue_Ring) ring = kMinimumValue_Ring;
         if (ring > kMaximumValue_Ring) ring = kMaximumValue_Ring;
         if (ring != lastRing) lastRing = ring;
         
-        ringSignature = (int) GetParameter(kParameter_Signature);
-        if (ringSignature < kMinimumValue_Signature) ringSignature = kMinimumValue_Signature;
-        if (ringSignature > kMaximumValue_Signature) ringSignature = kMaximumValue_Signature;
-        if (signature != lastSignature) lastRingSignature = ringSignature;
+        ringSignature = (int) GetParameter(kParameter_Ring_Signature);
+        if (ringSignature < kMinimumValue_Ring_Signature) ringSignature = kMinimumValue_Ring_Signature;
+        if (ringSignature > kMaximumValue_Ring_Signature) ringSignature = kMaximumValue_Ring_Signature;
+        if (ringSignature != lastRingSignature) lastRingSignature = ringSignature;
         
-        ringSpeed = (int) GetParameter(kParameter_Speed);
-        if (ringSpeed < kMinimumValue_Speed) ringSpeed = kMinimumValue_Speed;
-        if (ringSpeed > kMaximumValue_Speed) ringSpeed = kMaximumValue_Speed;
-        if (speed != lastSpeed) lastRingSpeed = ringSpeed;
+        ringSpeed = (int) GetParameter(kParameter_Ring_Speed);
+        if (ringSpeed < kMinimumValue_Ring_Speed) ringSpeed = kMinimumValue_Ring_Speed;
+        if (ringSpeed > kMaximumValue_Ring_Speed) ringSpeed = kMaximumValue_Ring_Speed;
+        if (ringSpeed != lastRingSpeed) lastRingSpeed = ringSpeed;
         
         ringDepth = GetParameter (kParameter_Ring_Depth);
-        if (ringDepth < kMinimumValue_Depth) ringDepth = kMinimumValue_Depth;
-        if (ringDepth > kMaximumValue_Depth) ringDepth = kMaximumValue_Depth;
+        if (ringDepth < kMinimumValue_Ring_Depth) ringDepth = kMinimumValue_Ring_Depth;
+        if (ringDepth > kMaximumValue_Depth) ringDepth = kMaximumValue_Ring_Depth;
         if (ringDepth != lastRingDepth) lastRingDepth = ringDepth;
         
-        ringDirection =  (int) GetParameter (kParameter_Direction);
-        if (ringDirection == kForward_Ring_Direction) ringDirection = 1;
-        else ringDirection = -1;
+        signalPowerDirection =  (int) GetParameter (kParameter_Signal_Power_Direction);
+        if (signalPowerDirection == kForward_Signal_Power_Direction) signalPowerDirection = 1;
+        else signalPowerDirection = -1;
         
         signalPower = GetParameter (kParameter_Signal_Power);
         if (signalPower	< kMinimumValue_Signal_Power) signalPower = kMinimumValue_Signal_Power;
         if (signalPower	> kMaximumValue_Signal_Power) signalPower = kMaximumValue_Signal_Power;
         if (signalPower != lastSignalPower) lastSignalPower = signalPower;
         
-        delayPower = GetParameter (kParameter_Delay_Power);
-        if (delayPower < kMinimumValue_Delay_Power) delayPower = kMinimumValue_Delay_Power;
-        if (delayPower > kMaximumValue_Delay_Power) delayPower = kMaximumValue_Delay_Power;
-        if (delayPower != lastDelayPower) lastDelayPower = delayPower;
+        signalPowerScale = GetParameter (kParameter_Signal_Power_Scale);
+        if (signalPowerScale < kMinimumValue_Signal_Power_Scale) signalPowerScale = kMinimumValue_Signal_Power_Scale;
+        if (signalPowerScale > kMaximumValue_Signal_Power_Scale) signalPowerScale = kMaximumValue_Signal_Power_Scale;
+        if (signalPowerScale != lastSignalPowerScale) lastSignalPowerScale = signalPowerScale;
+        
+        signalPowerSignature = (int) GetParameter(kParameter_Signal_Power_Signature);
+        if (signalPowerSignature < kMinimumValue_Signal_Power_Signature) ringSignature = kMinimumValue_Signal_Power_Signature;
+        if (signalPowerSignature > kMaximumValue_Signal_Power_Signature) ringSignature = kMaximumValue_Signal_Power_Signature;
+        if (signalPowerSignature != lastSignalPowerSignature) lastSignalPowerSignature = signalPowerSignature;
+        
+        signalPowerSpeed = (int) GetParameter(kParameter_Signal_Power_Speed);
+        if (signalPowerSpeed < kMinimumValue_Signal_Power_Speed) signalPowerSpeed = kMinimumValue_Signal_Power_Speed;
+        if (signalPowerSpeed > kMaximumValue_Signal_Power_Speed) signalPowerSpeed = kMaximumValue_Signal_Power_Speed;
+        if (signalPowerSpeed != lastSignalPowerSpeed) lastSignalPowerSpeed = signalPowerSpeed;
+        
+        signalPowerDepth = GetParameter (kParameter_Signal_Power_Depth);
+        if (signalPowerDepth < kMinimumValue_Signal_Power_Depth) signalPowerDepth = kMinimumValue_Signal_Power_Depth;
+        if (signalPowerDepth > kMaximumValue_Signal_Power_Depth) signalPowerDepth = kMaximumValue_Signal_Power_Depth;
+        if (signalPowerDepth != lastSignalPowerDepth) lastSignalPowerDepth = signalPowerDepth;
         
         fade = GetParameter (kParameter_Fade);
         if (fade < kMinimumValue_Fade) fade = kMinimumValue_Fade;
         if (fade > kMaximumValue_Fade) fade = kMaximumValue_Fade;
         if (fade != lastFade) lastFade = fade;
+        
+        duck = GetParameter (kParameter_Duck);
+        if (duck < kMinimumValue_Duck) duck = kMinimumValue_Duck;
+        if (duck > kMaximumValue_Fade) duck = kMaximumValue_Duck;
+        if (duck != lastDuck) lastDuck = duck;
         // ---- END UPDATE PARAMETERS ---- //
         
         Float64		bpm;
         OSStatus	err	= mAudioUnit->CallHostBeatAndTempo(NULL, &bpm);
         if (err == noErr) { bps = bpm/60; }
         
-        samplesPerDelay = (int) (mSampleFrequency*length/(2*bps*signature*speed));
-        samplesPerDelay = samplesPerDelay*2;
-        samplesPerRingDelay = (int) (mSampleFrequency*length/(2*bps*ringSignature*ringSpeed));
-        samplesPerRingDelay = samplesPerRingDelay*2;
+        samplesPerDelay = (int) (mSampleFrequency*length/(bps*signature*speed));
+        samplesPerRingDelay = (int) (mSampleFrequency*length/(bps*ringSignature*ringSpeed));
+        samplesPerSignalPowerDelay = (int) (mSampleFrequency*length/(bps*signalPowerSignature*signalPowerSpeed));
         
         int n = inSamplesToProcess;
         last = *sourceP;
@@ -582,42 +733,87 @@ void TremoloUnit::TremoloUnitKernel::Process (
                     memset(lastRingDelay,0,sizeof(float)*lastRingRate);
                     memset(ringDelay,0,sizeof(float)*lastRingRate);
                 }
+                if (samplesPerSignalPowerDelay != lastSignalPowerRate) {
+                    lastSignalPowerRate = samplesPerSignalPowerDelay;
+                    memset(lastSignalPowerDelay,0,sizeof(float)*maxDelaySamples);
+                    memset(signalPowerDelay,0,sizeof(float)*maxDelaySamples);
+                }
+                
                 if (direction != lastDirection) lastDirection = direction;
                 if (ringDirection != lastRingDirection) lastRingDirection = ringDirection;
+                if (signalPowerDirection != lastSignalPowerDirection) lastSignalPowerDirection = signalPowerDirection;
             }
-
-            prev = last;
+            
             last = *sourceP++;
             
             float mod;
             if (lastFade == 0) mod = 1;
-            else mod = (11+lastFade)*sinf(pi*head/(lastRate));
-            
+            else mod = lastFade*sinf(pi*head/(lastRate));
             if (mod < 0) mod = 0;
             else if (mod > 1) mod = 1;
+            mod = (lastDuck*mod + 1)/(lastDuck+1);
             
-            if (head == 0) {
-                lastDelay[0] = last;
-            } else if (head == lastRate-1) {
-                lastDelay[lastRate-1] = mod*(lastDelay[lastRate-2] + lastDelay[0] + last)/3;
-                delay[lastRate-1] = lastDelay[lastRate-1] + lastDepth*delay[lastRate-1];
-                delay[0] = 0;
-            } else {
-                lastDelay[head] = mod*last;
-                delay[head] = lastDelay[head] + lastDepth*delay[head];
-            }
+            float rmod;
+            if (lastFade == 0) rmod = 1;
+            else rmod = lastFade*sinf(pi*rhead/(lastRingRate));
+            if (rmod < 0) rmod = 0;
+            else if (rmod > 1) rmod = 1;
+            rmod = (lastDuck*rmod + 1)/(lastDuck+1);
             
+            float pmod;
+            if (lastFade == 0) pmod = 1;
+            else pmod = lastFade*sinf(pi*phead/(lastSignalPowerRate));
+            if (pmod < 0) pmod = 0;
+            else if (pmod > 1) pmod = 1;
+            pmod = (lastDuck*pmod + 1)/(lastDuck+1);
+
+            
+            delay[head] = (delay[(lastRate+head-1)%(lastRate)] + delay[head] + delay[(head+1)%(lastRate)])/3;
+            ringDelay[rhead] = (ringDelay[(lastRingRate+rhead-1)%(lastRingRate)] + ringDelay[rhead]
+                                + ringDelay[(rhead+1)%(lastRingRate)])/3;
+            signalPowerDelay[phead] = (signalPowerDelay[(lastSignalPowerRate+phead-1)%(lastSignalPowerRate)]
+                                       + signalPowerDelay[phead]
+                                       + signalPowerDelay[(phead+1)%(lastSignalPowerRate)])/3;
+            
+//            delay[head] = (delay[(lastRate+head-2)%(lastRate)] + 2*delay[(lastRate+head-1)%(lastRate)]
+//                           + 3*delay[head] + 2*delay[(head+1)%(lastRate)] + delay[(head+2)%(lastRate)])/9;
+//            ringDelay[rhead] = (ringDelay[(lastRingRate+rhead-2)%(lastRingRate)]
+//                                + 2*ringDelay[(lastRingRate+rhead-1)%(lastRingRate)] + 3*ringDelay[rhead]
+//                                + 2*ringDelay[(rhead+1)%(lastRingRate)] + ringDelay[(rhead+2)%(lastRingRate)])/9;
+//            signalPowerDelay[phead] = (signalPowerDelay[(lastSignalPowerRate+phead-2)%(lastSignalPowerRate)]
+//                                       + 2*signalPowerDelay[(lastSignalPowerRate+phead-1)%(lastSignalPowerRate)]
+//                                       + 3*signalPowerDelay[phead]
+//                                       + 2*signalPowerDelay[(phead+1)%(lastSignalPowerRate)]
+//                                       + signalPowerDelay[(phead+2)%(lastSignalPowerRate)])/9;
+            
+            *destP++ = (1-lastRingMix)*((1-lastMix)*last + mod*lastMix*delay[head])
+                        + lastRingMix*(
+                                       lastRing*(ringDelay[head]*ringDelay[(lastRingRate-rhead)%(lastRingRate)])
+                                        + mod*pow(lastDelayPowerScale*delay[head], lastDelayPower)
+                                        + pmod*pow(lastSignalPowerScale*signalPowerDelay[phead], lastSignalPower)
+                                       );
+
             head = (head+1)%(lastRate);
+            rhead = (rhead+1)%(lastRingRate);
+            phead = (phead+1)%(lastSignalPowerRate);
             
             if (lastDirection > 0) dhead = head;
             else dhead = (lastRate-head)%(lastRate);
+            if (lastRingDirection > 0) rdhead = rhead;
+            else rdhead = (lastRingRate-rhead)%(lastRingRate);
+            if (signalPowerDirection > 0) pdhead = phead;
+            else pdhead = (lastSignalPowerRate-phead)%(lastSignalPowerRate);
             
-            if (ringDirection) rhead = head;
-            else rhead = (lastRate-head)%(lastRate);
-            
-            *destP++ = (1-lastMix)*last + lastMix*delay[dhead] + lastRing*(last*delay[rhead]);
-//                        + signalPower*pow(last,ringSignature) + delayPower*pow(delay[dhead],ringSpeed);
-            
+            // write delay line
+            lastDelay[dhead] = (lastDelay[(lastRate+dhead-1)%(lastRate)] + last + lastDelay[(dhead+1)%(lastRate)])/3;
+            delay[dhead] = lastDelay[dhead] + lastDepth*delay[dhead];
+            // write ring delay line
+            lastRingDelay[rdhead] = (lastRingDelay[(lastRingRate+rdhead-1)%(lastRingRate)] + last + lastRingDelay[(rdhead+1)%(lastRingRate)])/3;
+            ringDelay[rdhead] = lastRingDelay[rdhead] + lastRingDepth*ringDelay[rdhead];
+            // write exponent delay line
+            lastSignalPowerDelay[pdhead] = (lastSignalPowerDelay[(lastSignalPowerRate+pdhead-1)%(lastSignalPowerRate)] + last
+                                            + lastSignalPowerDelay[(pdhead+1)%(lastSignalPowerRate)])/3;
+            signalPowerDelay[pdhead] = lastSignalPowerDelay[pdhead] + lastSignalPowerDepth*signalPowerDelay[pdhead];
         }
 	}
 }
